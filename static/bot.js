@@ -4,7 +4,7 @@
   const params = new URLSearchParams(scriptTag.src.split("?")[1] || "");
   const store = params.get("store");
 
-  const API_BASE = window.location.origin;
+  const API_BASE = new URL(scriptTag.src).origin;
 
   let botOpened = false;
   let pendingForm = null;
