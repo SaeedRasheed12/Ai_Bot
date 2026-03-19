@@ -1,67 +1,31 @@
 (function () {
 
-  const scriptTag = document.currentScript;
-  const params = new URLSearchParams(scriptTag.src.split("?")[1] || "");
-  const store = params.get("store");
+  /* ===============================
+     🔍 SAFE SCRIPT DETECTION
+  =============================== */
+  const scriptTag =
+    document.currentScript ||
+    [...document.querySelectorAll("script")].find(s =>
+      s.src && s.src.includes("/static/bot.js")
+    );
 
-  const API_BASE = new URL(scriptTag.src).origin;
+  if (!scriptTag) {
+    console.log("❌ Bot script not found");
+    return;
+  }
+
+  const scriptUrl = new URL(scriptTag.src);
+  const params = new URLSearchParams(scriptUrl.search);
+  const store = params.get("store");
+  const API_BASE = scriptUrl.origin;
+
+  console.log("🔥 BOT LOADED");
+  console.log("Store:", store);
+  console.log("API:", API_BASE);
 
   let botOpened = false;
   let pendingForm = null;
   let isSubmitting = false;
-
-  /* ===============================
-     🎉 SUCCESS UI
-  =============================== */
-  function showSuccessMessage() {
-    const overlay = document.createElement("div");
-
-    overlay.innerHTML = `
-      <div style="
-        position:fixed;
-        top:0;left:0;
-        width:100%;height:100%;
-        background:rgba(0,0,0,0.6);
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        z-index:9999999;
-      ">
-        <div style="
-          background:white;
-          padding:30px;
-          border-radius:18px;
-          text-align:center;
-          width:320px;
-          box-shadow:0 20px 60px rgba(0,0,0,0.3);
-        ">
-          <div style="font-size:50px;">✅</div>
-          <h2 style="margin:10px 0;">Order Placed!</h2>
-          <p style="font-size:14px;color:#555;">
-            Your order has been received successfully.
-          </p>
-
-          <button id="success-ok" style="
-            margin-top:15px;
-            padding:10px 20px;
-            background:#111;
-            color:white;
-            border:none;
-            border-radius:10px;
-            cursor:pointer;
-          ">OK</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    document.getElementById("success-ok").onclick = () => {
-      overlay.remove();
-    };
-
-    setTimeout(() => overlay.remove(), 3000);
-  }
 
   /* ===============================
      🔍 DETECT PHONE
@@ -118,20 +82,19 @@
   }
 
   /* ===============================
-     🚀 SEND ORDER
+     🚀 SEND ORDER (BACKGROUND)
   =============================== */
   async function sendOrder(phone, form) {
 
-    if (isSubmitting) return false;
+    if (isSubmitting) return;
     isSubmitting = true;
 
     try {
-
       const orderData = extractFormData(form);
 
       const res = await fetch(`${API_BASE}/api/new-order`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           store: store,
           phone: phone,
@@ -142,23 +105,23 @@
       const data = await res.json();
 
       if (!data.success) {
-        console.log("Order failed");
+        console.log("❌ Order failed:", data.message);
         isSubmitting = false;
-        return false;
+        return;
       }
 
-      showSuccessMessage();
-      return true;
+      console.log("✅ Order sent to bot system");
+
+      isSubmitting = false;
 
     } catch (err) {
-      console.log("Server error");
+      console.log("❌ Server error:", err);
       isSubmitting = false;
-      return false;
     }
   }
 
   /* ===============================
-     🤖 FALLBACK BOT
+     🤖 FALLBACK BOT (IF NO PHONE)
   =============================== */
   function createBot() {
 
@@ -172,14 +135,14 @@
         position:fixed;
         bottom:20px;
         right:20px;
-        width:340px;
+        width:320px;
         background:white;
         padding:20px;
         border-radius:16px;
         box-shadow:0 10px 40px rgba(0,0,0,0.2);
         z-index:999999;
       ">
-        <h4>Confirm Order</h4>
+        <h4 style="margin-bottom:10px;">Confirm Order</h4>
 
         <input id="bot-phone" placeholder="03XXXXXXXXX"
           style="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;">
@@ -193,7 +156,7 @@
 
     document.body.appendChild(wrapper);
 
-    document.getElementById("bot-btn").onclick = async () => {
+    document.getElementById("bot-btn").onclick = () => {
       const phone = document.getElementById("bot-phone").value.trim();
 
       if (!/^03\d{9}$/.test(phone)) {
@@ -201,56 +164,53 @@
         return;
       }
 
-      const ok = await sendOrder(phone, pendingForm);
+      sendOrder(phone, pendingForm);
 
-      if (ok) {
-        wrapper.remove();
-        setTimeout(() => pendingForm.submit(), 800);
-      }
+      wrapper.remove();
+
+      // resume normal submit
+      setTimeout(() => pendingForm.submit(), 300);
     };
   }
 
   /* ===============================
      🧠 DETECT CHECKOUT
   =============================== */
-  function isCheckoutForm(form){
+  function isCheckoutForm(form) {
     const inputs = form.querySelectorAll("input,textarea");
 
-    let hasPhone=false, hasName=false, hasAddress=false;
+    let hasPhone = false, hasName = false, hasAddress = false;
 
-    inputs.forEach(input=>{
-      const key = ((input.name||"") + " " + (input.placeholder||"")).toLowerCase();
+    inputs.forEach(input => {
+      const key = ((input.name || "") + " " + (input.placeholder || "")).toLowerCase();
 
-      if(key.includes("phone") || key.includes("mobile")) hasPhone=true;
-      if(key.includes("name")) hasName=true;
-      if(key.includes("address") || key.includes("city")) hasAddress=true;
+      if (key.includes("phone") || key.includes("mobile")) hasPhone = true;
+      if (key.includes("name")) hasName = true;
+      if (key.includes("address") || key.includes("city")) hasAddress = true;
     });
 
     return hasPhone && hasName && hasAddress;
   }
 
   /* ===============================
-     🎯 INTERCEPT SUBMIT
+     🎯 INTERCEPT SUBMIT (NON BLOCKING)
   =============================== */
-  document.addEventListener("submit", async function(e){
+  document.addEventListener("submit", function (e) {
 
     const form = e.target;
 
-    if(!isCheckoutForm(form)) return;
-
-    e.preventDefault();
-
-    pendingForm = form;
+    if (!isCheckoutForm(form)) return;
 
     const phone = detectPhone(form);
 
     if (phone) {
-      const ok = await sendOrder(phone, form);
-
-      if (ok) {
-        setTimeout(() => form.submit(), 800);
-      }
+      // 🚀 background API call
+      sendOrder(phone, form);
+      // ✅ DO NOT block → website success page continues
     } else {
+      // ❌ only block if no phone
+      e.preventDefault();
+      pendingForm = form;
       createBot();
     }
 
