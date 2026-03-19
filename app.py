@@ -190,26 +190,38 @@ def find_first_value(data, possible_keys):
 
 
 def extract_order_fields(form_data):
+
+    # ===============================
+    # 👤 CUSTOMER DETAILS
+    # ===============================
     customer_name = find_first_value(form_data, [
-        "name", "full name", "customer name", "billing name"
+        "_customer_name", "name", "full name", "customer name", "billing name"
     ])
 
     customer_email = find_first_value(form_data, [
-        "email", "customer email", "billing email"
+        "_customer_email", "email", "customer email", "billing email"
     ])
 
+    customer_phone = (
+        form_data.get("_customer_phone")
+        or find_first_value(form_data, ["phone", "mobile", "contact"])
+    )
+
     customer_address = find_first_value(form_data, [
-        "address", "shipping address", "billing address", "street address"
+        "_customer_address", "address", "shipping address", "billing address", "street address"
     ])
 
     customer_city = find_first_value(form_data, [
-        "city", "town"
+        "_customer_city", "city", "town"
     ])
 
     customer_postal_code = find_first_value(form_data, [
         "postal code", "postcode", "zip", "zip code"
     ])
 
+    # ===============================
+    # 🛒 PRODUCT DETAILS
+    # ===============================
     product_name = (
         form_data.get("_product_name")
         or find_first_value(form_data, ["product", "product name", "item"])
@@ -217,7 +229,17 @@ def extract_order_fields(form_data):
 
     product_price = (
         form_data.get("_product_price")
-        or find_first_value(form_data, ["price", "product price", "amount", "total"])
+        or find_first_value(form_data, ["price", "product price", "amount"])
+    )
+
+    delivery_fee = (
+        form_data.get("_delivery_fee")
+        or find_first_value(form_data, ["delivery", "shipping fee"])
+    )
+
+    total_price = (
+        form_data.get("_total_price")
+        or find_first_value(form_data, ["total", "grand total"])
     )
 
     product_image = (
@@ -225,22 +247,48 @@ def extract_order_fields(form_data):
         or find_first_value(form_data, ["image", "product image", "image url"])
     )
 
+    product_url = form_data.get("_product_url", "")
+
+    product_quantity = form_data.get("_product_quantity", "")
+
+    # ===============================
+    # 📄 META
+    # ===============================
     page_title = form_data.get("_title", "")
+    page_url = form_data.get("_page", "")
     submitted_at_text = form_data.get("_time", "")
 
+    # ===============================
+    # 🧠 EXTRA DEBUG (OPTIONAL)
+    # ===============================
+    summary_text = form_data.get("_summary_text", "")
+
     return {
+        # 👤 customer
         "customer_name": customer_name,
         "customer_email": customer_email,
+        "customer_phone": customer_phone,
         "customer_address": customer_address,
         "customer_city": customer_city,
         "customer_postal_code": customer_postal_code,
+
+        # 🛒 product
         "product_name": product_name,
         "product_price": product_price,
+        "delivery_fee": delivery_fee,
+        "total_price": total_price,
         "product_image": product_image,
-        "page_title": page_title,
-        "submitted_at_text": submitted_at_text,
-    }
+        "product_url": product_url,
+        "product_quantity": product_quantity,
 
+        # 📄 meta
+        "page_title": page_title,
+        "page_url": page_url,
+        "submitted_at_text": submitted_at_text,
+
+        # 🧠 debug
+        "summary_text": summary_text,
+    }
 
 def current_user():
     user_id = session.get("user_id")

@@ -3,11 +3,18 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto space-y-6">
+
+  <!-- ===============================
+       🛒 ORDER CARD
+  =============================== -->
   <div class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8">
     <div class="flex flex-col lg:flex-row gap-6">
+
+      <!-- 🖼️ PRODUCT IMAGE -->
       <div class="w-full lg:w-72 shrink-0">
         {% if order.product_image %}
-          <img src="{{ order.product_image }}" alt="Product Image" class="w-full h-72 object-cover rounded-3xl border border-white/10">
+          <img src="{{ order.product_image }}"
+               class="w-full h-72 object-cover rounded-3xl border border-white/10 shadow-lg">
         {% else %}
           <div class="w-full h-72 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
             No Product Image
@@ -15,39 +22,86 @@
         {% endif %}
       </div>
 
+      <!-- 📦 PRODUCT DETAILS -->
       <div class="flex-1">
+
+        <!-- Title + Status -->
         <div class="flex flex-wrap items-center gap-3 mb-4">
-          <h1 class="text-3xl font-black">{{ order.product_name or 'Untitled Product' }}</h1>
+          <h1 class="text-3xl font-black">
+            {{ order.product_name or 'Untitled Product' }}
+          </h1>
+
           <span class="px-4 py-2 rounded-full text-sm font-bold
-            {% if order.status == 'approved' %} bg-emerald-500/20 text-emerald-300
-            {% elif order.status == 'rejected' %} bg-red-500/20 text-red-300
-            {% else %} bg-amber-500/20 text-amber-300 {% endif %}">
+            {% if order.status == 'approved' %}
+              bg-emerald-500/20 text-emerald-300
+            {% elif order.status == 'rejected' %}
+              bg-red-500/20 text-red-300
+            {% else %}
+              bg-amber-500/20 text-amber-300
+            {% endif %}">
             {{ order.status.replace('_', ' ').title() }}
           </span>
         </div>
 
+        <!-- 💰 PRICING SECTION -->
+        <div class="grid sm:grid-cols-3 gap-4 mb-5">
+          <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+            <div class="text-sm text-slate-400">Item Price</div>
+            <div class="font-bold text-lg">{{ order.product_price or 'N/A' }}</div>
+          </div>
+
+          <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+            <div class="text-sm text-slate-400">Delivery</div>
+            <div class="font-bold text-lg">{{ order.delivery_fee or 'N/A' }}</div>
+          </div>
+
+          <div class="bg-white/5 p-4 rounded-xl border border-white/10">
+            <div class="text-sm text-slate-400">Total</div>
+            <div class="font-black text-xl text-emerald-400">
+              {{ order.total_price or order.product_price or 'N/A' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- 🔗 PRODUCT LINK -->
+        {% if order.product_url %}
+        <div class="mb-4">
+          <a href="{{ order.product_url }}" target="_blank"
+             class="inline-block px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition">
+            🔗 View Product
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- 👤 CUSTOMER INFO -->
         <div class="grid sm:grid-cols-2 gap-4 text-slate-300">
           <p><strong>Business:</strong> {{ order.store_ref.business_name }}</p>
-          <p><strong>Phone:</strong> {{ order.phone or 'N/A' }}</p>
+          <p><strong>Phone:</strong> {{ order.customer_phone or order.phone or 'N/A' }}</p>
           <p><strong>Customer:</strong> {{ order.customer_name or 'N/A' }}</p>
           <p><strong>Email:</strong> {{ order.customer_email or 'N/A' }}</p>
-          <p><strong>Price:</strong> {{ order.product_price or 'N/A' }}</p>
           <p><strong>City:</strong> {{ order.customer_city or 'N/A' }}</p>
           <p><strong>Postal Code:</strong> {{ order.customer_postal_code or 'N/A' }}</p>
+          <p><strong>Quantity:</strong> {{ order.product_quantity or '1' }}</p>
           <p><strong>Page Title:</strong> {{ order.page_title or 'N/A' }}</p>
         </div>
 
+        <!-- 📍 ADDRESS -->
         <div class="mt-4 text-slate-300">
           <strong>Address:</strong> {{ order.customer_address or 'N/A' }}
         </div>
 
+        <!-- 🌐 PAGE URL -->
         <div class="mt-4 text-slate-300 break-all">
-          <strong>Page URL:</strong> {{ order.page or 'N/A' }}
+          <strong>Page URL:</strong> {{ order.page_url or order.page or 'N/A' }}
         </div>
+
       </div>
     </div>
   </div>
 
+  <!-- ===============================
+       📋 RAW FORM DATA
+  =============================== -->
   <div class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8">
     <h2 class="text-2xl font-black mb-5">All Captured Form Fields</h2>
 
@@ -66,16 +120,22 @@
     {% endif %}
   </div>
 
+  <!-- ===============================
+       🔙 BACK BUTTON
+  =============================== -->
   <div>
     {% if current_user.is_admin %}
-      <a href="{{ url_for('admin_dashboard') }}" class="inline-block px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition">
+      <a href="{{ url_for('admin_dashboard') }}"
+         class="inline-block px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition">
         Back to Admin Dashboard
       </a>
     {% else %}
-      <a href="{{ url_for('user_dashboard') }}" class="inline-block px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition">
+      <a href="{{ url_for('user_dashboard') }}"
+         class="inline-block px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition">
         Back to Dashboard
       </a>
     {% endif %}
   </div>
+
 </div>
 {% endblock %}
