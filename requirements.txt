@@ -13,6 +13,8 @@ Flask-SQLAlchemy==3.0.3
 Flask-Uploads==0.2.1
 Flask-WTF==1.2.2
 
+Flask-Cors
+
 # Deployment / async / DB
 gunicorn==23.0.0
 eventlet==0.40.1
