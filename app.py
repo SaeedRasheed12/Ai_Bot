@@ -607,64 +607,116 @@ def reject_order(order_id):
 
 # ---------------- API ----------------
 
+from urllib.parse import urlparse
+
+
+def get_domain(url):
+    try:
+        parsed = urlparse(url)
+        return parsed.netloc.replace("www.", "").lower()
+    except:
+        return ""
+
+
 @app.route("/api/new-order", methods=["POST"])
 def new_order():
-    data = request.get_json(silent=True) or {}
+    try:
+        data = request.get_json(silent=True) or {}
 
-    store_id = data.get("store")
-    phone = str(data.get("phone", "")).strip()
-    form_data = data.get("form_data") or {}
-    page = form_data.get("_page") or ""
+        store_id = data.get("store")
+        phone = str(data.get("phone", "")).strip()
+        form_data = data.get("form_data") or {}
+        page = form_data.get("_page") or ""
 
-    if not store_id:
-        return jsonify(success=False, message="Missing store id"), 400
+        # ===============================
+        # BASIC VALIDATIONS
+        # ===============================
+        if not store_id:
+            return jsonify(success=False, message="Missing store id"), 400
 
-    store = Store.query.get(store_id)
-    if not store:
-        return jsonify(success=False, message="Store not found"), 404
+        store = Store.query.get(store_id)
+        if not store:
+            return jsonify(success=False, message="Store not found"), 404
 
-    if store.status != "active":
-        return jsonify(success=False, message="Store not active"), 403
+        if store.status != "active":
+            return jsonify(success=False, message="Store not active"), 403
 
-    if not store.script_enabled:
-        return jsonify(success=False, message="Script disabled by admin"), 403
+        if not store.script_enabled:
+            return jsonify(success=False, message="Script disabled"), 403
 
-    if not phone:
-        return jsonify(success=False, message="Phone required"), 400
+        if not phone:
+            return jsonify(success=False, message="Phone required"), 400
 
-    if not isinstance(form_data, dict):
-        return jsonify(success=False, message="Invalid form data"), 400
+        if not isinstance(form_data, dict):
+            return jsonify(success=False, message="Invalid form data"), 400
 
-    extracted = extract_order_fields(form_data)
+        # ===============================
+        # 🔒 DOMAIN VALIDATION
+        # ===============================
+        request_domain = get_domain(page)
+        store_domain = get_domain(store.business_url)
 
-    order = BotOrder(
-        token=str(uuid.uuid4()),
-        store_id=store.id,
-        phone=phone,
-        page=page,
-        customer_ip=request.headers.get("X-Forwarded-For", request.remote_addr),
-        form_data=json.dumps(form_data, ensure_ascii=False),
+        if not request_domain or not store_domain:
+            return jsonify(success=False, message="Invalid domain"), 400
 
-        customer_name=extracted["customer_name"],
-        customer_email=extracted["customer_email"],
-        customer_address=extracted["customer_address"],
-        customer_city=extracted["customer_city"],
-        customer_postal_code=extracted["customer_postal_code"],
+        # allow subdomains also
+        if not request_domain.endswith(store_domain):
+            return jsonify(success=False, message="Unauthorized domain"), 403
 
-        product_name=extracted["product_name"],
-        product_price=extracted["product_price"],
-        product_image=extracted["product_image"],
+        # ===============================
+        # EXTRACT DATA
+        # ===============================
+        extracted = extract_order_fields(form_data)
 
-        page_title=extracted["page_title"],
-        submitted_at_text=extracted["submitted_at_text"],
+        # ===============================
+        # SAFE IP DETECTION
+        # ===============================
+        customer_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
+        if customer_ip:
+            customer_ip = customer_ip.split(",")[0].strip()
 
-        status="pending_verification"
-    )
+        # ===============================
+        # CREATE ORDER
+        # ===============================
+        order = BotOrder(
+            token=str(uuid.uuid4()),
+            store_id=store.id,
+            phone=phone,
+            page=page,
+            customer_ip=customer_ip,
+            form_data=json.dumps(form_data, ensure_ascii=False),
 
-    db.session.add(order)
-    db.session.commit()
+            customer_name=extracted["customer_name"],
+            customer_email=extracted["customer_email"],
+            customer_address=extracted["customer_address"],
+            customer_city=extracted["customer_city"],
+            customer_postal_code=extracted["customer_postal_code"],
 
-    return jsonify(success=True, order_id=order.id, status=order.status)
+            product_name=extracted["product_name"],
+            product_price=extracted["product_price"],
+            product_image=extracted["product_image"],
+
+            page_title=extracted["page_title"],
+            submitted_at_text=extracted["submitted_at_text"],
+
+            status="pending_verification"
+        )
+
+        db.session.add(order)
+        db.session.commit()
+
+        return jsonify(
+            success=True,
+            order_id=order.id,
+            status=order.status
+        )
+
+    except Exception as e:
+        print("❌ ERROR:", str(e))
+        return jsonify(
+            success=False,
+            message="Server error"
+        ), 500
 
 
 @app.route("/api/order-status/<int:order_id>")
