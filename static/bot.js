@@ -9,19 +9,12 @@
       s.src && s.src.includes("/static/bot.js")
     );
 
-  if (!scriptTag) {
-    console.log("❌ Bot script not found");
-    return;
-  }
+  if (!scriptTag) return;
 
   const scriptUrl = new URL(scriptTag.src);
   const params = new URLSearchParams(scriptUrl.search);
   const store = params.get("store");
   const API_BASE = scriptUrl.origin;
-
-  console.log("🔥 BOT LOADED");
-  console.log("Store:", store);
-  console.log("API:", API_BASE);
 
   let botOpened = false;
   let pendingForm = null;
@@ -36,13 +29,7 @@
     for (let input of inputs) {
       const key = ((input.name || "") + " " + (input.placeholder || "")).toLowerCase();
 
-      if (
-        key.includes("phone") ||
-        key.includes("mobile") ||
-        key.includes("whatsapp") ||
-        key.includes("contact") ||
-        key.includes("number")
-      ) {
+      if (key.match(/phone|mobile|whatsapp|contact|number/)) {
         let val = (input.value || "").trim().replace(/\s+/g, "");
 
         if (/^03\d{9}$/.test(val)) return val;
@@ -50,12 +37,86 @@
         if (/^923\d{9}$/.test(val)) return "0" + val.slice(2);
       }
     }
-
     return "";
   }
 
   /* ===============================
-     📦 EXTRACT DATA
+     🧠 UNIVERSAL PRODUCT DETECTOR
+  =============================== */
+  function detectProduct() {
+
+    let product = {
+      name: "",
+      price: "",
+      image: "",
+      url: window.location.href
+    };
+
+    // 🏷️ NAME
+    const nameCandidates = [
+      "[data-product-name]",
+      ".product-title",
+      ".title",
+      "h1",
+      "h2"
+    ];
+
+    for (let sel of nameCandidates) {
+      const el = document.querySelector(sel);
+      if (el && el.innerText.trim().length > 2) {
+        product.name = el.innerText.trim();
+        break;
+      }
+    }
+
+    // 💰 PRICE (SMART SCAN)
+    const priceSelectors = [
+      "[data-product-price]",
+      ".price",
+      ".product-price",
+      ".amount",
+      "[class*='price']"
+    ];
+
+    for (let sel of priceSelectors) {
+      const el = document.querySelector(sel);
+      if (el && el.innerText.match(/\d/)) {
+        product.price = el.innerText.trim();
+        break;
+      }
+    }
+
+    // fallback: scan whole page
+    if (!product.price) {
+      const text = document.body.innerText;
+      const match = text.match(/Rs\.?\s?\d+|PKR\s?\d+|\d{3,6}/);
+      if (match) product.price = match[0];
+    }
+
+    // 🖼️ IMAGE (SMART FILTER)
+    const images = [...document.images];
+
+    const valid = images.filter(img => {
+      const src = img.src.toLowerCase();
+
+      return (
+        img.width > 200 &&
+        img.height > 200 &&
+        !src.includes("logo") &&
+        !src.includes("icon") &&
+        !src.includes("banner")
+      );
+    });
+
+    if (valid.length) {
+      product.image = valid.sort((a, b) => b.width - a.width)[0].src;
+    }
+
+    return product;
+  }
+
+  /* ===============================
+     📦 EXTRACT FULL CHECKOUT DATA
   =============================== */
   function extractFormData(form) {
     const formData = new FormData(form);
@@ -66,23 +127,29 @@
       data[key] = value;
     });
 
+    // 🌐 META
     data["_page"] = window.location.href;
     data["_title"] = document.title;
     data["_time"] = new Date().toISOString();
+    data["_referrer"] = document.referrer;
+    data["_device"] = navigator.userAgent;
 
-    const nameEl = document.querySelector("h1,.product-title,[data-product-name]");
-    const priceEl = document.querySelector(".price,.product-price");
-    const imgEl = document.querySelector("img.product,.product img,img");
+    // 🛒 PRODUCT
+    const product = detectProduct();
 
-    data["_product_name"] = nameEl ? nameEl.innerText.trim() : "";
-    data["_product_price"] = priceEl ? priceEl.innerText.trim() : "";
-    data["_product_image"] = imgEl ? imgEl.src : "";
+    data["_product_name"] = product.name;
+    data["_product_price"] = product.price;
+    data["_product_image"] = product.image;
+    data["_product_url"] = product.url;
+
+    // 🧠 EXTRA (capture ALL visible text - powerful)
+    data["_page_text_snapshot"] = document.body.innerText.slice(0, 2000);
 
     return data;
   }
 
   /* ===============================
-     🚀 SEND ORDER (BACKGROUND)
+     🚀 SEND ORDER
   =============================== */
   async function sendOrder(phone, form) {
 
@@ -105,13 +172,12 @@
       const data = await res.json();
 
       if (!data.success) {
-        console.log("❌ Order failed:", data.message);
+        console.log("❌ Failed:", data.message);
         isSubmitting = false;
         return;
       }
 
-      console.log("✅ Order sent to bot system");
-
+      console.log("✅ Order captured FULLY");
       isSubmitting = false;
 
     } catch (err) {
@@ -121,7 +187,7 @@
   }
 
   /* ===============================
-     🤖 FALLBACK BOT (IF NO PHONE)
+     🤖 FALLBACK BOT
   =============================== */
   function createBot() {
 
@@ -142,7 +208,7 @@
         box-shadow:0 10px 40px rgba(0,0,0,0.2);
         z-index:999999;
       ">
-        <h4 style="margin-bottom:10px;">Confirm Order</h4>
+        <h4>Confirm Order</h4>
 
         <input id="bot-phone" placeholder="03XXXXXXXXX"
           style="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;">
@@ -167,14 +233,12 @@
       sendOrder(phone, pendingForm);
 
       wrapper.remove();
-
-      // resume normal submit
       setTimeout(() => pendingForm.submit(), 300);
     };
   }
 
   /* ===============================
-     🧠 DETECT CHECKOUT
+     🧠 CHECKOUT DETECTOR
   =============================== */
   function isCheckoutForm(form) {
     const inputs = form.querySelectorAll("input,textarea");
@@ -184,16 +248,16 @@
     inputs.forEach(input => {
       const key = ((input.name || "") + " " + (input.placeholder || "")).toLowerCase();
 
-      if (key.includes("phone") || key.includes("mobile")) hasPhone = true;
+      if (key.match(/phone|mobile/)) hasPhone = true;
       if (key.includes("name")) hasName = true;
-      if (key.includes("address") || key.includes("city")) hasAddress = true;
+      if (key.match(/address|city/)) hasAddress = true;
     });
 
     return hasPhone && hasName && hasAddress;
   }
 
   /* ===============================
-     🎯 INTERCEPT SUBMIT (NON BLOCKING)
+     🎯 INTERCEPT SUBMIT
   =============================== */
   document.addEventListener("submit", function (e) {
 
@@ -204,11 +268,8 @@
     const phone = detectPhone(form);
 
     if (phone) {
-      // 🚀 background API call
-      sendOrder(phone, form);
-      // ✅ DO NOT block → website success page continues
+      sendOrder(phone, form); // background
     } else {
-      // ❌ only block if no phone
       e.preventDefault();
       pendingForm = form;
       createBot();
