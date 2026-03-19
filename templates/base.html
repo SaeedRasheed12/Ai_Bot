@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>{% block title %}Order Verification Platform{% endblock %}</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(99,102,241,.15), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(16,185,129,.12), transparent 30%),
+        linear-gradient(135deg, #0f172a 0%, #111827 45%, #1e293b 100%);
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body class="text-white">
+
+  <nav class="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+      <a href="{{ url_for('index') }}" class="text-2xl font-extrabold tracking-tight">
+        Verify<span class="text-emerald-400">Orders</span>
+      </a>
+
+      <div class="flex items-center gap-3 sm:gap-5 text-sm sm:text-base">
+        {% if current_user %}
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('admin_dashboard') }}" class="hover:text-emerald-300">Admin</a>
+          {% else %}
+            <a href="{{ url_for('user_dashboard') }}" class="hover:text-emerald-300">Dashboard</a>
+          {% endif %}
+          <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl font-semibold transition">Logout</a>
+        {% else %}
+          <a href="{{ url_for('login') }}" class="hover:text-emerald-300">Login</a>
+          <a href="{{ url_for('signup') }}" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl font-semibold transition">Signup</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="space-y-3 mb-6">
+          {% for category, message in messages %}
+            <div class="rounded-2xl px-4 py-3 shadow-lg border border-white/10
+              {% if category == 'success' %} bg-emerald-500/15 text-emerald-200
+              {% elif category == 'error' %} bg-red-500/15 text-red-200
+              {% else %} bg-white/10 text-white {% endif %}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

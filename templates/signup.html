@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Signup{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+  <div class="bg-white/10 border border-white/10 backdrop-blur-xl rounded-[30px] p-8 shadow-2xl">
+    <h1 class="text-3xl font-black mb-2">Create Account</h1>
+    <p class="text-slate-300 mb-8">Start your business verification journey.</p>
+
+    <form method="POST" class="space-y-5">
+      <div>
+        <label class="block text-sm mb-2 text-slate-300">Full Name</label>
+        <input type="text" name="full_name" required
+          class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none focus:border-emerald-400">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2 text-slate-300">Email</label>
+        <input type="email" name="email" required
+          class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none focus:border-emerald-400">
+      </div>
+
+      <div>
+        <label class="block text-sm mb-2 text-slate-300">Password</label>
+        <input type="password" name="password" required
+          class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none focus:border-emerald-400">
+      </div>
+
+      <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold transition">
+        Signup
+      </button>
+    </form>
+
+    <p class="mt-6 text-slate-300">
+      Already have an account?
+      <a href="{{ url_for('login') }}" class="text-emerald-300 font-semibold">Login</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
