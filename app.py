@@ -824,17 +824,21 @@ def order_status(order_id):
 # =========================================================
 
 def create_admin_if_missing():
-    admin = User.query.filter_by(email="Saeedrasheedshaikh8@gmail.com").first()
+    admin = User.query.filter_by(email="saeedrasheedshaikh8@gmail.com").first()
+
     if not admin:
         admin = User(
             full_name="Main Admin",
-            email="Saeedrasheedshaikh8@gmail.com",
+            email="saeedrasheedshaikh8@gmail.com",
             is_admin=True
         )
         admin.set_password("saeed1122")
         db.session.add(admin)
-        db.session.commit()
+    else:
+        # 🔥 FORCE RESET PASSWORD (IMPORTANT FIX)
+        admin.set_password("saeed1122")
 
+    db.session.commit()
 
 if __name__ == "__main__":
     with app.app_context():
