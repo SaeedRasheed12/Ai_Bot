@@ -97,6 +97,10 @@ class BotOrder(db.Model):
     customer_address = db.Column(db.Text)
     customer_city = db.Column(db.String(255))
     customer_postal_code = db.Column(db.String(100))
+    
+    delivery_fee = db.Column(db.String(100))
+    total_price = db.Column(db.String(100))
+    product_quantity = db.Column(db.String(50))
 
     product_name = db.Column(db.String(255))
     product_price = db.Column(db.String(100))
@@ -717,16 +721,19 @@ def new_order():
         extracted = extract_order_fields(form_data)
 
         # ===============================
-        # 🔗 PRODUCT URL (SMART LOGIC)
+        # 🔗 PRODUCT URL
         # ===============================
-        product_url = extracted.get("product_url")
-
-        # fallback → use current page if not sent
-        if not product_url:
-            product_url = page
+        product_url = extracted.get("product_url") or page
 
         # ===============================
-        # 🛡 DUPLICATE PROTECTION (ANTI SPAM)
+        # 💰 SAFE VALUES (NO NONE ISSUES)
+        # ===============================
+        delivery_fee = extracted.get("delivery_fee") or "0"
+        total_price = extracted.get("total_price") or extracted.get("product_price") or "0"
+        product_quantity = extracted.get("product_quantity") or "1"
+
+        # ===============================
+        # 🛡 DUPLICATE PROTECTION
         # ===============================
         recent_order = BotOrder.query.filter_by(
             store_id=store.id,
@@ -742,7 +749,7 @@ def new_order():
                 ), 429
 
         # ===============================
-        # 🌐 SAFE IP DETECTION
+        # 🌐 SAFE IP
         # ===============================
         customer_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if customer_ip:
@@ -760,21 +767,25 @@ def new_order():
             form_data=json.dumps(form_data, ensure_ascii=False),
 
             # 👤 CUSTOMER
-            customer_name=extracted["customer_name"],
-            customer_email=extracted["customer_email"],
-            customer_address=extracted["customer_address"],
-            customer_city=extracted["customer_city"],
-            customer_postal_code=extracted["customer_postal_code"],
+            customer_name=extracted.get("customer_name"),
+            customer_email=extracted.get("customer_email"),
+            customer_address=extracted.get("customer_address"),
+            customer_city=extracted.get("customer_city"),
+            customer_postal_code=extracted.get("customer_postal_code"),
 
             # 🛒 PRODUCT
-            product_name=extracted["product_name"],
-            product_price=extracted["product_price"],
-            product_image=extracted["product_image"],
-            product_url=product_url,  # 🔥 NEW FIELD
+            product_name=extracted.get("product_name"),
+            product_price=extracted.get("product_price"),
+            product_image=extracted.get("product_image"),
+            product_url=product_url,
+
+            delivery_fee=delivery_fee,            # ✅ FIXED
+            total_price=total_price,              # ✅ FIXED
+            product_quantity=product_quantity,    # ✅ FIXED
 
             # 📄 META
-            page_title=extracted["page_title"],
-            submitted_at_text=extracted["submitted_at_text"],
+            page_title=extracted.get("page_title"),
+            submitted_at_text=extracted.get("submitted_at_text"),
 
             status="pending_verification"
         )
