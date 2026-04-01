@@ -2,32 +2,31 @@
 {% block title %}View Order{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6">
+<div class="max-w-5xl mx-auto space-y-6">
 
   <!-- ===============================
-       🛒 PRODUCT + ORDER CARD
+       🛒 ORDER CARD
   =============================== -->
-  <div class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8 backdrop-blur-xl">
-
-    <div class="flex flex-col lg:flex-row gap-8">
+  <div class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8">
+    <div class="flex flex-col lg:flex-row gap-6">
 
       <!-- 🖼️ PRODUCT IMAGE -->
-      <div class="w-full lg:w-80 shrink-0">
+      <div class="w-full lg:w-72 shrink-0">
         {% if order.product_image %}
           <img src="{{ order.product_image }}"
-               class="w-full h-80 object-cover rounded-3xl border border-white/10 shadow-xl">
+               class="w-full h-72 object-cover rounded-3xl border border-white/10 shadow-lg">
         {% else %}
-          <div class="w-full h-80 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+          <div class="w-full h-72 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
             No Product Image
           </div>
         {% endif %}
       </div>
 
-      <!-- 📦 DETAILS -->
+      <!-- 📦 PRODUCT DETAILS -->
       <div class="flex-1">
 
-        <!-- 🔥 TITLE + STATUS -->
-        <div class="flex flex-wrap items-center gap-3 mb-5">
+        <!-- Title + Status -->
+        <div class="flex flex-wrap items-center gap-3 mb-4">
           <h1 class="text-3xl font-black">
             {{ order.product_name or 'Untitled Product' }}
           </h1>
@@ -44,28 +43,16 @@
           </span>
         </div>
 
-        <!-- 💰 PRICING -->
-        <div class="grid sm:grid-cols-4 gap-4 mb-6">
-
+        <!-- 💰 PRICING SECTION -->
+        <div class="grid sm:grid-cols-3 gap-4 mb-5">
           <div class="bg-white/5 p-4 rounded-xl border border-white/10">
             <div class="text-sm text-slate-400">Item Price</div>
-            <div class="font-bold text-lg">
-              {{ order.product_price or 'N/A' }}
-            </div>
+            <div class="font-bold text-lg">{{ order.product_price or 'N/A' }}</div>
           </div>
 
           <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-            <div class="text-sm text-slate-400">Delivery Fee</div>
-            <div class="font-bold text-lg">
-              {{ order.delivery_fee or '0' }}
-            </div>
-          </div>
-
-          <div class="bg-white/5 p-4 rounded-xl border border-white/10">
-            <div class="text-sm text-slate-400">Quantity</div>
-            <div class="font-bold text-lg">
-              {{ order.product_quantity or '1' }}
-            </div>
+            <div class="text-sm text-slate-400">Delivery</div>
+            <div class="font-bold text-lg">{{ order.delivery_fee or 'N/A' }}</div>
           </div>
 
           <div class="bg-white/5 p-4 rounded-xl border border-white/10">
@@ -74,43 +61,28 @@
               {{ order.total_price or order.product_price or 'N/A' }}
             </div>
           </div>
-
         </div>
 
-        <!-- 🔗 PRODUCT ACTIONS -->
+        <!-- 🔗 PRODUCT LINK -->
         {% if order.product_url %}
-        <div class="flex flex-wrap gap-3 mb-6">
-
-          <!-- VIEW BUTTON -->
+        <div class="mb-4">
           <a href="{{ order.product_url }}" target="_blank"
-             class="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold hover:scale-105 transition shadow-lg">
-            🔗 View Full Product
+             class="inline-block px-4 py-2 rounded-xl bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 transition">
+            🔗 View Product
           </a>
-
-          <!-- COPY LINK -->
-          <button onclick="copyLink()"
-             class="px-5 py-3 rounded-xl bg-white/10 border border-white/10 hover:bg-white/20 transition">
-            📋 Copy Link
-          </button>
-
         </div>
         {% endif %}
 
         <!-- 👤 CUSTOMER INFO -->
         <div class="grid sm:grid-cols-2 gap-4 text-slate-300">
-
           <p><strong>Business:</strong> {{ order.store_ref.business_name }}</p>
           <p><strong>Phone:</strong> {{ order.customer_phone or order.phone or 'N/A' }}</p>
-
           <p><strong>Customer:</strong> {{ order.customer_name or 'N/A' }}</p>
           <p><strong>Email:</strong> {{ order.customer_email or 'N/A' }}</p>
-
           <p><strong>City:</strong> {{ order.customer_city or 'N/A' }}</p>
           <p><strong>Postal Code:</strong> {{ order.customer_postal_code or 'N/A' }}</p>
-
+          <p><strong>Quantity:</strong> {{ order.product_quantity or '1' }}</p>
           <p><strong>Page Title:</strong> {{ order.page_title or 'N/A' }}</p>
-          <p><strong>Order Time:</strong> {{ order.submitted_at_text or 'N/A' }}</p>
-
         </div>
 
         <!-- 📍 ADDRESS -->
@@ -118,7 +90,7 @@
           <strong>Address:</strong> {{ order.customer_address or 'N/A' }}
         </div>
 
-        <!-- 🌐 PAGE -->
+        <!-- 🌐 PAGE URL -->
         <div class="mt-4 text-slate-300 break-all">
           <strong>Page URL:</strong> {{ order.page_url or order.page or 'N/A' }}
         </div>
@@ -128,10 +100,10 @@
   </div>
 
   <!-- ===============================
-       📋 EXTRA FORM DATA
+       📋 RAW FORM DATA
   =============================== -->
   <div class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8">
-    <h2 class="text-2xl font-black mb-5">Captured Form Fields</h2>
+    <h2 class="text-2xl font-black mb-5">All Captured Form Fields</h2>
 
     {% set fields = order.summary_fields() %}
     {% if fields %}
@@ -147,6 +119,15 @@
       <p class="text-slate-300">No extra form fields found.</p>
     {% endif %}
   </div>
+
+  {% if order.product_url %}
+<div class="mt-4">
+    <a href="{{ order.product_url }}" target="_blank"
+       class="inline-block px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+        🔗 View Product on Website
+    </a>
+</div>
+{% endif %}
 
   <!-- ===============================
        🔙 BACK BUTTON
@@ -166,14 +147,4 @@
   </div>
 
 </div>
-
-<!-- 🔥 COPY LINK SCRIPT -->
-<script>
-function copyLink() {
-  const url = "{{ order.product_url }}";
-  navigator.clipboard.writeText(url);
-  alert("Link copied!");
-}
-</script>
-
 {% endblock %}
