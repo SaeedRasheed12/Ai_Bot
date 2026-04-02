@@ -88,7 +88,6 @@ class BotOrder(db.Model):
     phone = db.Column(db.String(50), nullable=False)
     page = db.Column(db.String(1000))
     customer_ip = db.Column(db.String(120))
-    product_url = db.Column(db.String(1000))
 
     form_data = db.Column(db.Text)
 
@@ -708,6 +707,7 @@ def new_order():
         if not request_domain or not store_domain:
             return jsonify(success=False, message="Invalid domain"), 400
 
+        # allow subdomains also
         if not request_domain.endswith(store_domain):
             return jsonify(success=False, message="Unauthorized domain"), 403
 
@@ -717,39 +717,14 @@ def new_order():
         extracted = extract_order_fields(form_data)
 
         # ===============================
-        # 🔗 PRODUCT URL (SMART LOGIC)
-        # ===============================
-        product_url = extracted.get("product_url")
-
-        # fallback → use current page if not sent
-        if not product_url:
-            product_url = page
-
-        # ===============================
-        # 🛡 DUPLICATE PROTECTION (ANTI SPAM)
-        # ===============================
-        recent_order = BotOrder.query.filter_by(
-            store_id=store.id,
-            phone=phone
-        ).order_by(BotOrder.created_at.desc()).first()
-
-        if recent_order:
-            time_diff = (datetime.utcnow() - recent_order.created_at).seconds
-            if time_diff < 20:
-                return jsonify(
-                    success=False,
-                    message="Too many requests. Try again."
-                ), 429
-
-        # ===============================
-        # 🌐 SAFE IP DETECTION
+        # SAFE IP DETECTION
         # ===============================
         customer_ip = request.headers.get("X-Forwarded-For", request.remote_addr)
         if customer_ip:
             customer_ip = customer_ip.split(",")[0].strip()
 
         # ===============================
-        # 📦 CREATE ORDER
+        # CREATE ORDER
         # ===============================
         order = BotOrder(
             token=str(uuid.uuid4()),
@@ -759,20 +734,16 @@ def new_order():
             customer_ip=customer_ip,
             form_data=json.dumps(form_data, ensure_ascii=False),
 
-            # 👤 CUSTOMER
             customer_name=extracted["customer_name"],
             customer_email=extracted["customer_email"],
             customer_address=extracted["customer_address"],
             customer_city=extracted["customer_city"],
             customer_postal_code=extracted["customer_postal_code"],
 
-            # 🛒 PRODUCT
             product_name=extracted["product_name"],
             product_price=extracted["product_price"],
             product_image=extracted["product_image"],
-            product_url=product_url,  # 🔥 NEW FIELD
 
-            # 📄 META
             page_title=extracted["page_title"],
             submitted_at_text=extracted["submitted_at_text"],
 
@@ -794,6 +765,7 @@ def new_order():
             success=False,
             message="Server error"
         ), 500
+
 
 @app.route("/api/order-status/<int:order_id>")
 def order_status(order_id):
