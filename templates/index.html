@@ -2,82 +2,189 @@
 {% block title %}Home - Order Verification Platform{% endblock %}
 
 {% block content %}
-<section class="grid lg:grid-cols-2 gap-10 items-center py-10">
-  <div>
-    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-sm font-medium mb-6">
-      Smart order verification for online businesses
-    </div>
 
-    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">
-      Turn your website orders into
-      <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-400">
-        verified business leads
-      </span>
-    </h1>
+<!-- ===============================
+     HERO SECTION
+=============================== -->
+<section class="relative overflow-hidden py-16">
+  <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-cyan-500/10 to-indigo-500/10 blur-3xl"></div>
 
-    <p class="mt-6 text-lg text-slate-300 leading-8">
-      Signup, submit your business, upload payment screenshot, get approved by admin,
-      paste one script on your website, and start receiving orders with status tracking.
-    </p>
+  <div class="relative grid lg:grid-cols-2 gap-12 items-center">
 
-    <div class="mt-8 flex flex-wrap gap-4">
-      <a href="{{ url_for('signup') }}" class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold shadow-xl transition">
-        Get Started
-      </a>
-      <a href="{{ url_for('login') }}" class="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 font-bold transition">
-        Login
-      </a>
-    </div>
-
-    <div class="grid sm:grid-cols-3 gap-4 mt-10">
-      <div class="bg-white/10 border border-white/10 rounded-3xl p-5">
-        <div class="text-3xl font-extrabold text-emerald-300">1</div>
-        <div class="mt-2 font-semibold">Register Business</div>
+    <!-- LEFT -->
+    <div>
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-emerald-300 text-sm font-medium mb-6">
+        🚀 Smart Order Verification SaaS
       </div>
-      <div class="bg-white/10 border border-white/10 rounded-3xl p-5">
-        <div class="text-3xl font-extrabold text-cyan-300">2</div>
-        <div class="mt-2 font-semibold">Get Approved</div>
-      </div>
-      <div class="bg-white/10 border border-white/10 rounded-3xl p-5">
-        <div class="text-3xl font-extrabold text-indigo-300">3</div>
-        <div class="mt-2 font-semibold">Track Orders</div>
-      </div>
-    </div>
-  </div>
 
-  <div class="relative">
-    <div class="absolute inset-0 blur-3xl bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-indigo-500/20 rounded-full"></div>
+      <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight">
+        Convert fake orders into
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-cyan-400 to-indigo-400">
+          verified customers
+        </span>
+      </h1>
 
-    <div class="relative bg-white/10 border border-white/10 backdrop-blur-xl rounded-[32px] p-6 shadow-2xl">
-      <div class="grid gap-4">
-        <div class="bg-slate-900/70 rounded-2xl p-5 border border-white/10">
-          <div class="text-sm text-slate-400">Business Status</div>
-          <div class="mt-2 text-2xl font-bold text-emerald-300">Active & Verified</div>
+      <p class="mt-6 text-lg text-slate-300 leading-8">
+        Capture complete checkout data from any website, verify orders instantly,
+        and turn your COD business into a reliable, fraud-free system.
+      </p>
+
+      <div class="mt-8 flex flex-wrap gap-4">
+        <a href="{{ url_for('signup') }}"
+           class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold shadow-xl transition">
+          Get Started Free
+        </a>
+
+        <a href="{{ url_for('login') }}"
+           class="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 border border-white/10 font-bold transition">
+          Login
+        </a>
+      </div>
+
+      <!-- TRUST -->
+      <div class="mt-10 grid grid-cols-3 gap-4 text-center">
+        <div>
+          <div class="text-2xl font-black text-emerald-300">100+</div>
+          <div class="text-sm text-slate-400">Stores</div>
         </div>
+        <div>
+          <div class="text-2xl font-black text-cyan-300">10K+</div>
+          <div class="text-sm text-slate-400">Orders</div>
+        </div>
+        <div>
+          <div class="text-2xl font-black text-indigo-300">99%</div>
+          <div class="text-sm text-slate-400">Accuracy</div>
+        </div>
+      </div>
+    </div>
 
-        <div class="grid sm:grid-cols-2 gap-4">
-          <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
-            <div class="text-sm text-slate-400">Pending Orders</div>
-            <div class="mt-2 text-3xl font-black">24</div>
+    <!-- RIGHT (LIVE CARD) -->
+    <div class="relative">
+      <div class="absolute inset-0 blur-3xl bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-indigo-500/20 rounded-full"></div>
+
+      <div class="relative bg-white/10 border border-white/10 backdrop-blur-xl rounded-[32px] p-6 shadow-2xl">
+
+        <div class="space-y-4">
+
+          <div class="bg-slate-900/70 rounded-2xl p-5 border border-white/10">
+            <div class="text-sm text-slate-400">Business Status</div>
+            <div class="mt-2 text-2xl font-bold text-emerald-300">Active & Verified</div>
           </div>
-          <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
-            <div class="text-sm text-slate-400">Approved Orders</div>
-            <div class="mt-2 text-3xl font-black">112</div>
-          </div>
-        </div>
 
-        <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
-          <div class="font-bold text-lg mb-3">Why businesses use this</div>
-          <ul class="space-y-3 text-slate-300">
-            <li>• Easy signup and business approval flow</li>
-            <li>• One-line script installation</li>
-            <li>• WordPress / Shopify / PHP guidance</li>
-            <li>• Orders show with status and product details</li>
-            <li>• Admin can approve, reject, block, disable script</li>
-          </ul>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+              <div class="text-sm text-slate-400">Pending</div>
+              <div class="mt-2 text-3xl font-black">24</div>
+            </div>
+            <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+              <div class="text-sm text-slate-400">Verified</div>
+              <div class="mt-2 text-3xl font-black">112</div>
+            </div>
+          </div>
+
+          <div class="bg-white/5 rounded-2xl p-5 border border-white/10">
+            <div class="text-sm text-slate-400">Latest Order</div>
+            <div class="mt-2 font-bold">Nike Shoes - Rs 4,500</div>
+            <div class="text-xs text-slate-400 mt-1">Customer: Ali • Karachi</div>
+          </div>
+
         </div>
       </div>
     </div>
+
   </div>
 </section>
+
+<!-- ===============================
+     HOW IT WORKS
+=============================== -->
+<section class="py-16">
+  <h2 class="text-3xl font-black text-center mb-12">How It Works</h2>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-4xl mb-3">📝</div>
+      <h3 class="font-bold text-xl">Register Business</h3>
+      <p class="text-slate-300 mt-2 text-sm">
+        Submit your store details and upload payment proof.
+      </p>
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-4xl mb-3">✅</div>
+      <h3 class="font-bold text-xl">Get Approved</h3>
+      <p class="text-slate-300 mt-2 text-sm">
+        Admin verifies your business and activates your account.
+      </p>
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-4xl mb-3">📊</div>
+      <h3 class="font-bold text-xl">Track Orders</h3>
+      <p class="text-slate-300 mt-2 text-sm">
+        Install script and start capturing verified checkout data.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===============================
+     FEATURES
+=============================== -->
+<section class="py-16">
+  <h2 class="text-3xl font-black text-center mb-12">Why This Platform Wins</h2>
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      ⚡ One-line script installation
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      🛒 Capture full checkout data
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      🔐 Secure domain validation
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      📱 Works with Shopify, WordPress, PHP
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      🚫 Detect duplicate / fake orders
+    </div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      📊 Real-time dashboard analytics
+    </div>
+
+  </div>
+</section>
+
+<!-- ===============================
+     CTA
+=============================== -->
+<section class="py-16 text-center">
+  <div class="bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-indigo-500/20 border border-white/10 rounded-3xl p-10">
+
+    <h2 class="text-3xl font-black mb-4">
+      Start verifying your orders today
+    </h2>
+
+    <p class="text-slate-300 mb-6">
+      Stop fake orders, reduce losses, and grow your business with confidence.
+    </p>
+
+    <a href="{{ url_for('signup') }}"
+       class="px-8 py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold text-lg shadow-xl">
+      Get Started Now 🚀
+    </a>
+
+  </div>
+</section>
+
 {% endblock %}

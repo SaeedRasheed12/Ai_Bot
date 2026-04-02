@@ -2,33 +2,100 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto">
-  <div class="bg-white/10 border border-white/10 backdrop-blur-xl rounded-[30px] p-8 shadow-2xl">
-    <h1 class="text-3xl font-black mb-2">Welcome Back</h1>
-    <p class="text-slate-300 mb-8">Login to access your dashboard.</p>
+<div class="min-h-[80vh] flex items-center justify-center">
 
-    <form method="POST" class="space-y-5">
-      <div>
-        <label class="block text-sm mb-2 text-slate-300">Email</label>
-        <input type="email" name="email" required
-          class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none focus:border-emerald-400">
+  <div class="grid lg:grid-cols-2 gap-8 w-full max-w-6xl">
+
+    <!-- ===============================
+         LEFT SIDE (BRANDING)
+    =============================== -->
+    <div class="hidden lg:flex flex-col justify-center bg-gradient-to-br from-cyan-500/10 via-indigo-500/10 to-emerald-500/10 border border-white/10 rounded-[32px] p-10 backdrop-blur-xl">
+
+      <h2 class="text-4xl font-black leading-tight">
+        Welcome back to
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-emerald-400">
+          VerifyOrders
+        </span>
+      </h2>
+
+      <p class="text-slate-300 mt-4 leading-7">
+        Log in to monitor your captured orders, verify customers,
+        and manage your business dashboard.
+      </p>
+
+      <div class="mt-8 space-y-4 text-slate-300">
+        <div>✔ Real-time order tracking</div>
+        <div>✔ Fake order detection</div>
+        <div>✔ One-click verification system</div>
       </div>
 
-      <div>
-        <label class="block text-sm mb-2 text-slate-300">Password</label>
-        <input type="password" name="password" required
-          class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none focus:border-emerald-400">
-      </div>
+    </div>
 
-      <button type="submit" class="w-full py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition">
-        Login
-      </button>
-    </form>
+    <!-- ===============================
+         RIGHT SIDE (FORM)
+    =============================== -->
+    <div class="bg-white/10 border border-white/10 backdrop-blur-xl rounded-[32px] p-8 shadow-2xl">
 
-    <p class="mt-6 text-slate-300">
-      Don’t have an account?
-      <a href="{{ url_for('signup') }}" class="text-emerald-300 font-semibold">Signup</a>
-    </p>
+      <h1 class="text-3xl font-black mb-2">Login</h1>
+      <p class="text-slate-300 mb-8">Enter your credentials to continue</p>
+
+      <form method="POST" class="space-y-6">
+
+        <!-- EMAIL -->
+        <div>
+          <label class="block text-sm mb-2 text-slate-300">Email</label>
+          <input type="email" name="email" required
+            placeholder="you@example.com"
+            class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 outline-none focus:border-cyan-400 transition">
+        </div>
+
+        <!-- PASSWORD -->
+        <div>
+          <label class="block text-sm mb-2 text-slate-300">Password</label>
+
+          <div class="relative">
+            <input type="password" name="password" id="passwordField" required
+              placeholder="••••••••"
+              class="w-full rounded-2xl bg-white/10 border border-white/10 px-4 py-3 pr-12 outline-none focus:border-cyan-400 transition">
+
+            <!-- TOGGLE -->
+            <button type="button" onclick="togglePassword()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+              👁️
+            </button>
+          </div>
+        </div>
+
+        <!-- SUBMIT -->
+        <button type="submit"
+          class="w-full py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold text-lg transition shadow-xl">
+          Login 🚀
+        </button>
+
+      </form>
+
+      <!-- SIGNUP -->
+      <p class="mt-6 text-slate-300 text-sm">
+        Don’t have an account?
+        <a href="{{ url_for('signup') }}" class="text-emerald-300 font-semibold hover:underline">
+          Signup
+        </a>
+      </p>
+
+    </div>
+
   </div>
+
 </div>
+
+<!-- ===============================
+     JS (PASSWORD TOGGLE)
+=============================== -->
+<script>
+function togglePassword() {
+  const field = document.getElementById("passwordField");
+  field.type = field.type === "password" ? "text" : "password";
+}
+</script>
+
 {% endblock %}

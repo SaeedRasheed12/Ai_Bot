@@ -6,11 +6,13 @@
 
   <title>{% block title %}Order Verification Platform{% endblock %}</title>
 
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
+  <!-- Config -->
   <script>
     tailwind.config = {
       theme: {
@@ -23,6 +25,7 @@
     }
   </script>
 
+  <!-- Background -->
   <style>
     body {
       font-family: 'Outfit', sans-serif;
@@ -34,48 +37,156 @@
     }
   </style>
 </head>
+
 <body class="text-white">
 
-  <nav class="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-      <a href="{{ url_for('index') }}" class="text-2xl font-extrabold tracking-tight">
-        Verify<span class="text-emerald-400">Orders</span>
+<!-- ===============================
+     NAVBAR
+=============================== -->
+<nav class="sticky top-0 z-50 backdrop-blur-xl bg-white/10 border-b border-white/10">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+
+    <!-- LOGO -->
+    <a href="{{ url_for('index') }}" class="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+      🚀 Verify<span class="text-emerald-400">Orders</span>
+    </a>
+
+    <!-- DESKTOP NAV -->
+    <div class="hidden md:flex items-center gap-6 text-sm font-medium">
+
+      {% if current_user %}
+        {% if current_user.is_admin %}
+          <a href="{{ url_for('admin_dashboard') }}" class="hover:text-emerald-300 transition">Admin</a>
+        {% else %}
+          <a href="{{ url_for('user_dashboard') }}" class="hover:text-emerald-300 transition">Dashboard</a>
+        {% endif %}
+
+        <a href="{{ url_for('logout') }}"
+           class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl font-semibold transition shadow">
+          Logout
+        </a>
+
+      {% else %}
+        <a href="{{ url_for('login') }}" class="hover:text-emerald-300 transition">Login</a>
+        <a href="{{ url_for('signup') }}"
+           class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl font-semibold transition shadow">
+          Signup
+        </a>
+      {% endif %}
+    </div>
+
+    <!-- MOBILE BUTTON -->
+    <button id="menuBtn" class="md:hidden text-2xl">
+      ☰
+    </button>
+
+  </div>
+
+  <!-- MOBILE MENU -->
+  <div id="mobileMenu" class="hidden md:hidden px-6 pb-4 space-y-3">
+
+    {% if current_user %}
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('admin_dashboard') }}" class="block py-2 hover:text-emerald-300">Admin</a>
+      {% else %}
+        <a href="{{ url_for('user_dashboard') }}" class="block py-2 hover:text-emerald-300">Dashboard</a>
+      {% endif %}
+
+      <a href="{{ url_for('logout') }}"
+         class="block py-2 text-red-300 hover:text-red-200">
+        Logout
       </a>
 
-      <div class="flex items-center gap-3 sm:gap-5 text-sm sm:text-base">
-        {% if current_user %}
-          {% if current_user.is_admin %}
-            <a href="{{ url_for('admin_dashboard') }}" class="hover:text-emerald-300">Admin</a>
-          {% else %}
-            <a href="{{ url_for('user_dashboard') }}" class="hover:text-emerald-300">Dashboard</a>
-          {% endif %}
-          <a href="{{ url_for('logout') }}" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-xl font-semibold transition">Logout</a>
-        {% else %}
-          <a href="{{ url_for('login') }}" class="hover:text-emerald-300">Login</a>
-          <a href="{{ url_for('signup') }}" class="bg-emerald-500 hover:bg-emerald-600 px-4 py-2 rounded-xl font-semibold transition">Signup</a>
-        {% endif %}
+    {% else %}
+      <a href="{{ url_for('login') }}" class="block py-2 hover:text-emerald-300">Login</a>
+      <a href="{{ url_for('signup') }}" class="block py-2 hover:text-emerald-300">Signup</a>
+    {% endif %}
+
+  </div>
+</nav>
+
+<!-- ===============================
+     MAIN CONTENT
+=============================== -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+  <!-- FLASH MESSAGES -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="space-y-3 mb-6">
+        {% for category, message in messages %}
+          <div class="rounded-2xl px-4 py-3 shadow-lg border border-white/10 animate-fadeIn
+            {% if category == 'success' %} bg-emerald-500/15 text-emerald-200
+            {% elif category == 'error' %} bg-red-500/15 text-red-200
+            {% else %} bg-white/10 text-white {% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
       </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- ===============================
+     FOOTER
+=============================== -->
+<footer class="mt-16 border-t border-white/10 bg-white/5 backdrop-blur-xl">
+  <div class="max-w-7xl mx-auto px-6 py-8 grid md:grid-cols-3 gap-6 text-sm">
+
+    <div>
+      <h3 class="font-bold text-lg mb-2">VerifyOrders</h3>
+      <p class="text-slate-400">
+        Smart order verification system to reduce fake orders and increase trust.
+      </p>
     </div>
-  </nav>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        <div class="space-y-3 mb-6">
-          {% for category, message in messages %}
-            <div class="rounded-2xl px-4 py-3 shadow-lg border border-white/10
-              {% if category == 'success' %} bg-emerald-500/15 text-emerald-200
-              {% elif category == 'error' %} bg-red-500/15 text-red-200
-              {% else %} bg-white/10 text-white {% endif %}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+    <div>
+      <h3 class="font-bold mb-2">Quick Links</h3>
+      <ul class="space-y-2 text-slate-400">
+        <li><a href="{{ url_for('index') }}" class="hover:text-white">Home</a></li>
+        <li><a href="{{ url_for('login') }}" class="hover:text-white">Login</a></li>
+        <li><a href="{{ url_for('signup') }}" class="hover:text-white">Signup</a></li>
+      </ul>
+    </div>
 
-    {% block content %}{% endblock %}
-  </main>
+    <div>
+      <h3 class="font-bold mb-2">Contact</h3>
+      <p class="text-slate-400">support@verifyorders.com</p>
+      <p class="text-slate-400">Karachi, Pakistan</p>
+    </div>
+
+  </div>
+
+  <div class="text-center text-slate-500 text-xs pb-4">
+    © {{ 2026 }} VerifyOrders. All rights reserved.
+  </div>
+</footer>
+
+<!-- ===============================
+     JS
+=============================== -->
+<script>
+  // Mobile menu toggle
+  document.getElementById("menuBtn").onclick = function () {
+    const menu = document.getElementById("mobileMenu");
+    menu.classList.toggle("hidden");
+  };
+</script>
+
+<!-- ===============================
+     ANIMATIONS
+=============================== -->
+<style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease;
+}
+</style>
 
 </body>
 </html>

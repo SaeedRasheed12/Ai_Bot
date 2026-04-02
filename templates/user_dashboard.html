@@ -2,197 +2,521 @@
 {% block title %}User Dashboard{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
+<div class="max-w-7xl mx-auto space-y-8">
 
-  <section class="bg-white/10 border border-white/10 backdrop-blur-xl rounded-[30px] p-6 sm:p-8 shadow-2xl">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-      <div>
-        <p class="text-slate-300">Welcome back</p>
-        <h1 class="text-3xl sm:text-4xl font-black">{{ user.full_name }}</h1>
+  <!-- ===============================
+       HERO / WELCOME
+  =============================== -->
+  <section class="relative overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-br from-white/10 via-white/5 to-cyan-500/10 backdrop-blur-xl shadow-2xl">
+    <div class="absolute inset-0 pointer-events-none">
+      <div class="absolute -top-20 -right-20 w-72 h-72 bg-cyan-500/10 blur-3xl rounded-full"></div>
+      <div class="absolute -bottom-16 -left-16 w-72 h-72 bg-indigo-500/10 blur-3xl rounded-full"></div>
+    </div>
+
+    <div class="relative p-6 sm:p-8 lg:p-10">
+      <div class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+        <div class="space-y-3">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/10 text-sm text-slate-300">
+            <span class="w-2 h-2 rounded-full {% if store and store.script_enabled %}bg-emerald-400{% else %}bg-amber-400{% endif %}"></span>
+            Merchant Control Panel
+          </div>
+
+          <div>
+            <p class="text-slate-300 text-sm sm:text-base">Welcome back</p>
+            <h1 class="text-3xl sm:text-4xl xl:text-5xl font-black tracking-tight">
+              {{ user.full_name }}
+            </h1>
+            <p class="text-slate-300 mt-2 max-w-2xl">
+              Monitor your checkout capture system, manage your business connection, and review every captured order in one place.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          {% if not store %}
+            <a href="{{ url_for('business_setup') }}"
+               class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold transition text-center shadow-lg shadow-emerald-500/20">
+              Submit Business
+            </a>
+          {% else %}
+            <a href="{{ url_for('business_setup') }}"
+               class="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 font-bold transition text-center">
+              Update Setup
+            </a>
+
+            {% if store.business_url %}
+            <a href="{{ store.business_url }}" target="_blank"
+               class="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition text-center shadow-lg shadow-cyan-500/20">
+              Open Website
+            </a>
+            {% endif %}
+          {% endif %}
+        </div>
       </div>
-
-      {% if not store %}
-        <a href="{{ url_for('business_setup') }}" class="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold transition text-center">
-          Submit Business
-        </a>
-      {% endif %}
     </div>
   </section>
 
   {% if not store %}
-    <div class="bg-white/10 border border-white/10 rounded-[28px] p-8 text-center">
-      <h2 class="text-2xl font-bold mb-2">No Business Submitted Yet</h2>
-      <p class="text-slate-300 mb-6">First create account, then submit your business details and payment screenshot.</p>
-      <a href="{{ url_for('business_setup') }}" class="inline-block px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition">
-        Setup Business
-      </a>
-    </div>
+    <!-- ===============================
+         NO BUSINESS STATE
+    =============================== -->
+    <section class="rounded-[30px] border border-white/10 bg-white/10 backdrop-blur-xl p-8 sm:p-10 text-center shadow-2xl">
+      <div class="max-w-2xl mx-auto">
+        <div class="w-20 h-20 rounded-3xl bg-cyan-500/15 border border-cyan-400/20 flex items-center justify-center mx-auto mb-5 text-4xl">
+          🏪
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-black mb-3">No Business Submitted Yet</h2>
+        <p class="text-slate-300 mb-6">
+          Start by submitting your business information and payment screenshot. Once approved, you’ll get your checkout capture script here.
+        </p>
+        <a href="{{ url_for('business_setup') }}"
+           class="inline-flex items-center justify-center px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-600 font-bold transition shadow-lg shadow-cyan-500/20">
+          Setup Business
+        </a>
+      </div>
+    </section>
   {% else %}
 
-    <section class="grid lg:grid-cols-3 gap-6">
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <p class="text-slate-400 text-sm">Business Name</p>
-        <h3 class="text-2xl font-bold mt-2">{{ store.business_name }}</h3>
+    <!-- ===============================
+         TOP STATS
+    =============================== -->
+    <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-slate-400 text-sm">Business Name</p>
+            <h3 class="text-xl sm:text-2xl font-black mt-2 break-words">{{ store.business_name }}</h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-400/20 flex items-center justify-center text-xl">
+            🏢
+          </div>
+        </div>
       </div>
 
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <p class="text-slate-400 text-sm">Business Status</p>
-        <h3 class="text-2xl font-bold mt-2
-          {% if store.status == 'active' %} text-emerald-300
-          {% elif store.status == 'rejected' %} text-red-300
-          {% else %} text-amber-300 {% endif %}">
-          {{ store.status.replace('_', ' ').title() }}
-        </h3>
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-slate-400 text-sm">Business Status</p>
+            <h3 class="text-xl sm:text-2xl font-black mt-2
+              {% if store.status == 'active' %} text-emerald-300
+              {% elif store.status == 'rejected' %} text-red-300
+              {% else %} text-amber-300 {% endif %}">
+              {{ store.status.replace('_', ' ').title() }}
+            </h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl
+            {% if store.status == 'active' %}bg-emerald-500/10 border border-emerald-400/20
+            {% elif store.status == 'rejected' %}bg-red-500/10 border border-red-400/20
+            {% else %}bg-amber-500/10 border border-amber-400/20{% endif %}
+            flex items-center justify-center text-xl">
+            {% if store.status == 'active' %}✅{% elif store.status == 'rejected' %}⛔{% else %}⏳{% endif %}
+          </div>
+        </div>
       </div>
 
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <p class="text-slate-400 text-sm">Script Status</p>
-        <h3 class="text-2xl font-bold mt-2 {% if store.script_enabled %}text-emerald-300{% else %}text-red-300{% endif %}">
-          {% if store.script_enabled %}Enabled{% else %}Disabled{% endif %}
-        </h3>
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-slate-400 text-sm">Script Status</p>
+            <h3 class="text-xl sm:text-2xl font-black mt-2 {% if store.script_enabled %}text-emerald-300{% else %}text-red-300{% endif %}">
+              {% if store.script_enabled %}Enabled{% else %}Disabled{% endif %}
+            </h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl {% if store.script_enabled %}bg-emerald-500/10 border border-emerald-400/20{% else %}bg-red-500/10 border border-red-400/20{% endif %} flex items-center justify-center text-xl">
+            {% if store.script_enabled %}⚡{% else %}🔒{% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-slate-400 text-sm">Total Orders</p>
+            <h3 class="text-3xl sm:text-4xl font-black mt-2">
+              {{ pending_orders|length + approved_orders|length + rejected_orders|length }}
+            </h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-400/20 flex items-center justify-center text-xl">
+            📦
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8">
-      <h2 class="text-2xl font-black mb-3">Business Details</h2>
-      <div class="grid md:grid-cols-2 gap-5 text-slate-200">
-        <div><strong>Website:</strong> <a class="text-cyan-300 break-all" href="{{ store.business_url }}" target="_blank">{{ store.business_url }}</a></div>
-        <div><strong>Owner:</strong> {{ store.owner_name }}</div>
-        <div><strong>Email:</strong> {{ store.business_email }}</div>
-        <div><strong>Contact:</strong> {{ store.contact_number }}</div>
+    <!-- ===============================
+         BUSINESS OVERVIEW
+    =============================== -->
+    <section class="grid xl:grid-cols-[1.2fr_.8fr] gap-6">
+      <div class="rounded-[30px] border border-white/10 bg-white/10 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div>
+            <h2 class="text-2xl font-black">Business Details</h2>
+            <p class="text-slate-400 text-sm mt-1">Your connected merchant profile</p>
+          </div>
+          <span class="px-4 py-2 rounded-full text-sm font-bold
+            {% if store.status == 'active' %}bg-emerald-500/20 text-emerald-300 border border-emerald-400/20
+            {% elif store.status == 'rejected' %}bg-red-500/20 text-red-300 border border-red-400/20
+            {% else %}bg-amber-500/20 text-amber-300 border border-amber-400/20{% endif %}">
+            {{ store.status.replace('_', ' ').title() }}
+          </span>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-5 text-slate-200">
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">Website</div>
+            <a class="text-cyan-300 break-all hover:text-cyan-200" href="{{ store.business_url }}" target="_blank">
+              {{ store.business_url }}
+            </a>
+          </div>
+
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">Owner</div>
+            <div class="font-semibold">{{ store.owner_name }}</div>
+          </div>
+
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">Business Email</div>
+            <div class="font-semibold break-all">{{ store.business_email }}</div>
+          </div>
+
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="text-xs uppercase tracking-wider text-slate-400 mb-2">Contact Number</div>
+            <div class="font-semibold">{{ store.contact_number }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-[30px] border border-white/10 bg-white/10 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        <h2 class="text-2xl font-black mb-4">Order Performance</h2>
+
+        <div class="space-y-4">
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-400">Pending</span>
+              <span class="font-bold text-amber-300">{{ pending_orders|length }}</span>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full bg-amber-400 rounded-full" style="width: {% set total = pending_orders|length + approved_orders|length + rejected_orders|length %}{% if total > 0 %}{{ ((pending_orders|length / total) * 100)|round(0, 'floor') }}{% else %}0{% endif %}%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-400">Verified</span>
+              <span class="font-bold text-emerald-300">{{ approved_orders|length }}</span>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full bg-emerald-400 rounded-full" style="width: {% if total > 0 %}{{ ((approved_orders|length / total) * 100)|round(0, 'floor') }}{% else %}0{% endif %}%"></div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl bg-white/5 border border-white/10 p-4">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-slate-400">Rejected</span>
+              <span class="font-bold text-red-300">{{ rejected_orders|length }}</span>
+            </div>
+            <div class="mt-3 h-2 rounded-full bg-white/10 overflow-hidden">
+              <div class="h-full bg-red-400 rounded-full" style="width: {% if total > 0 %}{{ ((rejected_orders|length / total) * 100)|round(0, 'floor') }}{% else %}0{% endif %}%"></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
+    <!-- ===============================
+         SCRIPT SECTION
+    =============================== -->
     {% if store.status == 'active' and store.script_enabled %}
-    <section class="bg-white/10 border border-emerald-400/20 rounded-[30px] p-6 sm:p-8">
-      <h2 class="text-2xl font-black mb-3">Your Script</h2>
-      <p class="text-slate-300 mb-4">Copy this one line and paste it on your website before closing <code>&lt;/body&gt;</code> tag.</p>
+    <section class="rounded-[30px] border border-emerald-400/20 bg-emerald-500/10 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-6">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/15 border border-emerald-400/20 text-sm text-emerald-300 mb-4">
+            ✅ Script Ready
+          </div>
+          <h2 class="text-2xl sm:text-3xl font-black mb-3">Your Capture Script</h2>
+          <p class="text-slate-300 mb-4">
+            Copy this one line and paste it before the closing <code>&lt;/body&gt;</code> tag on your website. Once installed, checkout data will start appearing here.
+          </p>
+        </div>
 
-      <div class="bg-slate-950/70 border border-white/10 rounded-2xl p-4 overflow-x-auto text-sm text-emerald-300">
+        <div class="shrink-0">
+          <button type="button"
+                  onclick="navigator.clipboard.writeText(document.getElementById('merchant-script-code').innerText)"
+                  class="px-5 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 font-bold transition">
+            Copy Script
+          </button>
+        </div>
+      </div>
+
+      <div id="merchant-script-code"
+           class="mt-5 bg-slate-950/80 border border-white/10 rounded-2xl p-4 overflow-x-auto text-sm text-emerald-300 leading-7">
         <code>{{ script }}</code>
       </div>
 
       <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
         <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
           <div class="font-bold text-emerald-300 mb-2">WordPress</div>
-          <p class="text-sm text-slate-300">Open theme footer or custom code plugin, paste script before &lt;/body&gt;.</p>
+          <p class="text-sm text-slate-300">Open theme footer or a custom code plugin and paste the script before <code>&lt;/body&gt;</code>.</p>
         </div>
 
         <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
           <div class="font-bold text-cyan-300 mb-2">Shopify</div>
-          <p class="text-sm text-slate-300">Go to Online Store → Themes → Edit Code → theme.liquid, paste before &lt;/body&gt;.</p>
+          <p class="text-sm text-slate-300">Go to Online Store → Themes → Edit Code → <code>theme.liquid</code>, then paste before <code>&lt;/body&gt;</code>.</p>
         </div>
 
         <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
           <div class="font-bold text-indigo-300 mb-2">Custom PHP</div>
-          <p class="text-sm text-slate-300">Open footer.php or main layout file and paste before closing body tag.</p>
+          <p class="text-sm text-slate-300">Open <code>footer.php</code> or your main layout file and paste the script near the closing body tag.</p>
         </div>
 
         <div class="bg-white/5 rounded-2xl p-4 border border-white/10">
           <div class="font-bold text-pink-300 mb-2">HTML Website</div>
-          <p class="text-sm text-slate-300">Open your HTML file and paste script just above &lt;/body&gt;.</p>
+          <p class="text-sm text-slate-300">Open the HTML file and paste the script just above the closing <code>&lt;/body&gt;</code> tag.</p>
         </div>
       </div>
     </section>
     {% elif store.status == 'pending_payment_review' %}
-    <section class="bg-amber-500/10 border border-amber-400/20 rounded-[30px] p-6 sm:p-8">
-      <h2 class="text-2xl font-black text-amber-300 mb-2">Waiting for Admin Approval</h2>
-      <p class="text-slate-300">Your business and payment screenshot have been submitted. Once admin approves, your script will appear here.</p>
+    <section class="rounded-[30px] border border-amber-400/20 bg-amber-500/10 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <div class="flex items-start gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center text-2xl shrink-0">
+          ⏳
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-amber-300 mb-2">Waiting for Admin Approval</h2>
+          <p class="text-slate-300">
+            Your business info and payment screenshot have been submitted. Once the admin approves your business, your script will appear here automatically.
+          </p>
+        </div>
+      </div>
     </section>
     {% else %}
-    <section class="bg-red-500/10 border border-red-400/20 rounded-[30px] p-6 sm:p-8">
-      <h2 class="text-2xl font-black text-red-300 mb-2">Business Rejected / Script Disabled</h2>
-      <p class="text-slate-300">Please contact admin if you need re-activation.</p>
+    <section class="rounded-[30px] border border-red-400/20 bg-red-500/10 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <div class="flex items-start gap-4">
+        <div class="w-14 h-14 rounded-2xl bg-red-500/15 border border-red-400/20 flex items-center justify-center text-2xl shrink-0">
+          ⛔
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-red-300 mb-2">Business Rejected / Script Disabled</h2>
+          <p class="text-slate-300">
+            Your script is currently unavailable. Please contact admin if you want your business reviewed again or re-activated.
+          </p>
+        </div>
+      </div>
     </section>
     {% endif %}
 
-    <section class="grid md:grid-cols-3 gap-6">
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <div class="text-slate-400 text-sm">Pending Orders</div>
-        <div class="text-4xl font-black mt-2">{{ pending_orders|length }}</div>
+    <!-- ===============================
+         ORDER STATS
+    =============================== -->
+    <section class="grid md:grid-cols-3 gap-5">
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-slate-400 text-sm">Pending Orders</div>
+            <div class="text-4xl font-black mt-2">{{ pending_orders|length }}</div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-400/20 flex items-center justify-center text-xl">
+            🕒
+          </div>
+        </div>
       </div>
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <div class="text-slate-400 text-sm">Verified Orders</div>
-        <div class="text-4xl font-black mt-2">{{ approved_orders|length }}</div>
+
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-slate-400 text-sm">Verified Orders</div>
+            <div class="text-4xl font-black mt-2">{{ approved_orders|length }}</div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center text-xl">
+            ✅
+          </div>
+        </div>
       </div>
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <div class="text-slate-400 text-sm">Rejected Orders</div>
-        <div class="text-4xl font-black mt-2">{{ rejected_orders|length }}</div>
+
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-6 shadow-xl backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="text-slate-400 text-sm">Rejected Orders</div>
+            <div class="text-4xl font-black mt-2">{{ rejected_orders|length }}</div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-400/20 flex items-center justify-center text-xl">
+            ❌
+          </div>
+        </div>
       </div>
     </section>
 
     {% macro order_card(order, badge_text, badge_class) %}
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-5 shadow-xl">
-        <div class="flex flex-col lg:flex-row gap-5">
-          <div class="w-full lg:w-40 shrink-0">
+      <div class="rounded-[28px] border border-white/10 bg-white/10 p-5 sm:p-6 shadow-2xl backdrop-blur-xl">
+        <div class="flex flex-col xl:flex-row gap-5">
+
+          <div class="w-full xl:w-44 shrink-0">
             {% if order.product_image %}
-              <img src="{{ order.product_image }}" alt="Product" class="w-full h-40 object-cover rounded-2xl border border-white/10">
+              <img src="{{ order.product_image }}"
+                   alt="Product"
+                   class="w-full h-44 object-cover rounded-2xl border border-white/10 shadow-lg">
             {% else %}
-              <div class="w-full h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+              <div class="w-full h-44 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                 No Image
               </div>
             {% endif %}
           </div>
 
-          <div class="flex-1">
-            <div class="flex flex-wrap items-center justify-between gap-3">
-              <h3 class="text-xl font-bold">{{ order.product_name or 'Untitled Product' }}</h3>
-              <span class="px-4 py-2 rounded-full text-sm font-bold {{ badge_class }}">{{ badge_text }}</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div class="min-w-0">
+                <h3 class="text-xl sm:text-2xl font-bold break-words">
+                  {{ order.product_name or 'Untitled Product' }}
+                </h3>
+                <p class="text-slate-400 text-sm mt-1">
+                  {{ order.page_title or 'Checkout Order Capture' }}
+                </p>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <span class="px-4 py-2 rounded-full text-sm font-bold {{ badge_class }}">
+                  {{ badge_text }}
+                </span>
+
+                {% if order.is_duplicate %}
+                <span class="px-4 py-2 rounded-full text-sm font-bold bg-red-500/20 text-red-300 border border-red-400/20">
+                  Duplicate
+                </span>
+                {% endif %}
+              </div>
             </div>
 
-            <div class="grid sm:grid-cols-2 gap-3 mt-4 text-slate-300">
-              <p><strong>Customer:</strong> {{ order.customer_name or 'N/A' }}</p>
-              <p><strong>Phone:</strong> {{ order.phone or 'N/A' }}</p>
-              <p><strong>Email:</strong> {{ order.customer_email or 'N/A' }}</p>
-              <p><strong>Price:</strong> {{ order.product_price or 'N/A' }}</p>
-              <p><strong>City:</strong> {{ order.customer_city or 'N/A' }}</p>
-              <p><strong>Postal:</strong> {{ order.customer_postal_code or 'N/A' }}</p>
+            <div class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-5 text-slate-300 text-sm">
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">Customer</div>
+                <div class="font-semibold break-words">{{ order.customer_name or 'N/A' }}</div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">Phone</div>
+                <div class="font-semibold">{{ order.phone or 'N/A' }}</div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">Price</div>
+                <div class="font-semibold">{{ order.total_price or order.product_price or 'N/A' }}</div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">City</div>
+                <div class="font-semibold">{{ order.customer_city or 'N/A' }}</div>
+              </div>
             </div>
 
-            <div class="mt-3 text-slate-300">
-              <strong>Address:</strong> {{ order.customer_address or 'N/A' }}
+            <div class="grid sm:grid-cols-2 xl:grid-cols-3 gap-3 mt-3 text-sm">
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">Email</div>
+                <div class="font-medium break-all">{{ order.customer_email or 'N/A' }}</div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">Payment Method</div>
+                <div class="font-medium">{{ order.payment_method or 'Unknown' }}</div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-3">
+                <div class="text-slate-400 text-xs mb-1">Quantity</div>
+                <div class="font-medium">{{ order.product_quantity or '1' }}</div>
+              </div>
             </div>
 
-            <div class="mt-5">
-              <a href="{{ url_for('view_order', order_id=order.id) }}" class="inline-block px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 font-semibold transition">
+            <div class="mt-3 rounded-xl bg-white/5 border border-white/10 p-3 text-sm text-slate-300">
+              <div class="text-slate-400 text-xs mb-1">Address</div>
+              <div class="break-words">{{ order.customer_address or 'N/A' }}</div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 mt-5">
+              <a href="{{ url_for('view_order', order_id=order.id) }}"
+                 class="inline-flex items-center px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 font-semibold transition shadow-lg shadow-cyan-500/20">
                 View Full Order
               </a>
+
+              {% if order.product_url %}
+              <a href="{{ order.product_url }}" target="_blank"
+                 class="inline-flex items-center px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 font-semibold transition">
+                View Product
+              </a>
+              {% endif %}
             </div>
           </div>
         </div>
       </div>
     {% endmacro %}
 
+    <!-- ===============================
+         PENDING ORDERS
+    =============================== -->
     <section class="space-y-4">
-      <h2 class="text-2xl font-black">Pending Orders</h2>
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-2xl sm:text-3xl font-black">Pending Orders</h2>
+        <span class="px-4 py-2 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/20 text-sm font-bold">
+          {{ pending_orders|length }} Pending
+        </span>
+      </div>
+
       {% if pending_orders %}
-        {% for order in pending_orders %}
-          {{ order_card(order, 'Pending', 'bg-amber-500/20 text-amber-300 border border-amber-400/20') }}
-        {% endfor %}
+        <div class="space-y-4">
+          {% for order in pending_orders %}
+            {{ order_card(order, 'Pending', 'bg-amber-500/20 text-amber-300 border border-amber-400/20') }}
+          {% endfor %}
+        </div>
       {% else %}
-        <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No pending orders yet.</div>
+        <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-slate-300">
+          No pending orders yet.
+        </div>
       {% endif %}
     </section>
 
+    <!-- ===============================
+         VERIFIED ORDERS
+    =============================== -->
     <section class="space-y-4">
-      <h2 class="text-2xl font-black">Verified Orders</h2>
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-2xl sm:text-3xl font-black">Verified Orders</h2>
+        <span class="px-4 py-2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/20 text-sm font-bold">
+          {{ approved_orders|length }} Verified
+        </span>
+      </div>
+
       {% if approved_orders %}
-        {% for order in approved_orders %}
-          {{ order_card(order, 'Verified', 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/20') }}
-        {% endfor %}
+        <div class="space-y-4">
+          {% for order in approved_orders %}
+            {{ order_card(order, 'Verified', 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/20') }}
+          {% endfor %}
+        </div>
       {% else %}
-        <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No verified orders yet.</div>
+        <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-slate-300">
+          No verified orders yet.
+        </div>
       {% endif %}
     </section>
 
+    <!-- ===============================
+         REJECTED ORDERS
+    =============================== -->
     <section class="space-y-4">
-      <h2 class="text-2xl font-black">Rejected Orders</h2>
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="text-2xl sm:text-3xl font-black">Rejected Orders</h2>
+        <span class="px-4 py-2 rounded-full bg-red-500/20 text-red-300 border border-red-400/20 text-sm font-bold">
+          {{ rejected_orders|length }} Rejected
+        </span>
+      </div>
+
       {% if rejected_orders %}
-        {% for order in rejected_orders %}
-          {{ order_card(order, 'Rejected', 'bg-red-500/20 text-red-300 border border-red-400/20') }}
-        {% endfor %}
+        <div class="space-y-4">
+          {% for order in rejected_orders %}
+            {{ order_card(order, 'Rejected', 'bg-red-500/20 text-red-300 border border-red-400/20') }}
+          {% endfor %}
+        </div>
       {% else %}
-        <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No rejected orders yet.</div>
+        <div class="rounded-2xl border border-white/10 bg-white/10 p-6 text-slate-300">
+          No rejected orders yet.
+        </div>
       {% endif %}
     </section>
 

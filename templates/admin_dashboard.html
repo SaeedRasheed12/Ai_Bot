@@ -2,219 +2,226 @@
 {% block title %}Admin Dashboard{% endblock %}
 
 {% block content %}
-<div class="space-y-8">
+<div class="space-y-10">
 
-  <section class="bg-white/10 border border-white/10 rounded-[30px] p-6 sm:p-8">
-    <h1 class="text-3xl sm:text-4xl font-black">Admin Dashboard</h1>
-    <p class="text-slate-300 mt-2">Approve businesses, manage scripts, handle users, and review all orders.</p>
+  <!-- ===============================
+       HEADER
+  =============================== -->
+  <section class="bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-emerald-500/10 border border-white/10 rounded-[30px] p-8 shadow-2xl">
+    <h1 class="text-4xl font-black">Admin Control Panel</h1>
+    <p class="text-slate-300 mt-2">
+      Manage businesses, users, scripts and all order activity from one place.
+    </p>
   </section>
 
-  <section class="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
-    <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-      <div class="text-slate-400 text-sm">Pending Businesses</div>
-      <div class="text-4xl font-black mt-2">{{ pending_businesses|length }}</div>
+  <!-- ===============================
+       STATS (UPGRADED)
+  =============================== -->
+  <section class="grid sm:grid-cols-2 xl:grid-cols-4 gap-6">
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-sm text-slate-400">Pending Businesses</div>
+      <div class="text-4xl font-black mt-2 text-amber-300">{{ pending_businesses|length }}</div>
     </div>
-    <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-      <div class="text-slate-400 text-sm">Active Businesses</div>
-      <div class="text-4xl font-black mt-2">{{ active_businesses|length }}</div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-sm text-slate-400">Active Businesses</div>
+      <div class="text-4xl font-black mt-2 text-emerald-300">{{ active_businesses|length }}</div>
     </div>
-    <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-      <div class="text-slate-400 text-sm">Pending Orders</div>
-      <div class="text-4xl font-black mt-2">{{ pending_orders|length }}</div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-sm text-slate-400">Pending Orders</div>
+      <div class="text-4xl font-black mt-2 text-amber-300">{{ pending_orders|length }}</div>
     </div>
-    <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-      <div class="text-slate-400 text-sm">Total Users</div>
-      <div class="text-4xl font-black mt-2">{{ users|length }}</div>
+
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10">
+      <div class="text-sm text-slate-400">Total Users</div>
+      <div class="text-4xl font-black mt-2 text-indigo-300">{{ users|length }}</div>
     </div>
+
   </section>
 
-  <section class="space-y-4">
-    <h2 class="text-2xl font-black">Pending Business Requests</h2>
-    {% if pending_businesses %}
-      {% for store in pending_businesses %}
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <div class="grid lg:grid-cols-[1fr_auto] gap-6 items-start">
-          <div class="space-y-2">
-            <h3 class="text-2xl font-bold">{{ store.business_name }}</h3>
-            <p class="text-slate-300"><strong>Website:</strong> <a href="{{ store.business_url }}" target="_blank" class="text-cyan-300 break-all">{{ store.business_url }}</a></p>
-            <p class="text-slate-300"><strong>Owner:</strong> {{ store.owner_name }}</p>
-            <p class="text-slate-300"><strong>Email:</strong> {{ store.business_email }}</p>
-            <p class="text-slate-300"><strong>Contact:</strong> {{ store.contact_number }}</p>
-            <p class="text-slate-300"><strong>Amount:</strong> {{ store.payment_amount }}</p>
+  <!-- ===============================
+       BUSINESS APPROVAL (UPGRADED)
+  =============================== -->
+  <section class="space-y-5">
+    <h2 class="text-3xl font-black">Pending Business Requests</h2>
 
-            {% if store.payment_screenshot %}
-              <a href="{{ store.payment_screenshot }}" target="_blank" class="inline-block mt-2 text-emerald-300 font-semibold">View Payment Screenshot</a>
-            {% endif %}
-          </div>
-
-          <div class="flex flex-col gap-3 min-w-[180px]">
-            <a href="{{ url_for('approve_store', store_id=store.id) }}" class="text-center px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold transition">Approve</a>
-            <a href="{{ url_for('reject_store', store_id=store.id) }}" class="text-center px-5 py-3 rounded-2xl bg-red-500 hover:bg-red-600 font-bold transition">Reject</a>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No pending business requests.</div>
-    {% endif %}
-  </section>
-
-  <section class="space-y-4">
-    <h2 class="text-2xl font-black">All Businesses</h2>
-    {% if stores %}
-      {% for store in stores %}
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6">
-        <div class="grid lg:grid-cols-[1fr_auto] gap-6 items-start">
-          <div class="space-y-2">
-            <div class="flex flex-wrap items-center gap-3">
-              <h3 class="text-2xl font-bold">{{ store.business_name }}</h3>
-              <span class="px-4 py-2 rounded-full text-sm font-bold
-                {% if store.status == 'active' %} bg-emerald-500/20 text-emerald-300
-                {% elif store.status == 'rejected' %} bg-red-500/20 text-red-300
-                {% else %} bg-amber-500/20 text-amber-300 {% endif %}">
-                {{ store.status.replace('_', ' ').title() }}
-              </span>
-            </div>
-
-            <p class="text-slate-300"><strong>Owner:</strong> {{ store.owner_name }}</p>
-            <p class="text-slate-300"><strong>Website:</strong> <a href="{{ store.business_url }}" target="_blank" class="text-cyan-300 break-all">{{ store.business_url }}</a></p>
-            <p class="text-slate-300"><strong>Email:</strong> {{ store.business_email }}</p>
-            <p class="text-slate-300"><strong>Contact:</strong> {{ store.contact_number }}</p>
-            <p class="text-slate-300"><strong>Script:</strong>
-              {% if store.script_enabled %}
-                <span class="text-emerald-300 font-semibold">Enabled</span>
-              {% else %}
-                <span class="text-red-300 font-semibold">Disabled</span>
-              {% endif %}
-            </p>
-          </div>
-
-          <div class="flex flex-col gap-3 min-w-[180px]">
-            <a href="{{ url_for('toggle_script', store_id=store.id) }}" class="text-center px-5 py-3 rounded-2xl bg-indigo-500 hover:bg-indigo-600 font-bold transition">
-              {% if store.script_enabled %}Disable Script{% else %}Enable Script{% endif %}
-            </a>
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No businesses found.</div>
-    {% endif %}
-  </section>
-
-  <section class="space-y-4">
-    <h2 class="text-2xl font-black">Users</h2>
-    {% if users %}
-      {% for u in users %}
-      <div class="bg-white/10 border border-white/10 rounded-[28px] p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h3 class="text-xl font-bold">{{ u.full_name }}</h3>
-          <p class="text-slate-300">{{ u.email }}</p>
-          <p class="text-slate-300 mt-1">
-            Status:
-            {% if u.is_blocked %}
-              <span class="text-red-300 font-semibold">Blocked</span>
-            {% else %}
-              <span class="text-emerald-300 font-semibold">Active</span>
-            {% endif %}
-          </p>
-        </div>
+    {% for store in pending_businesses %}
+    <div class="bg-white/10 p-6 rounded-3xl border border-white/10 shadow-xl">
+      <div class="grid lg:grid-cols-[1fr_auto] gap-6">
 
         <div>
-          {% if u.is_blocked %}
-            <a href="{{ url_for('unblock_user', user_id=u.id) }}" class="inline-block px-5 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 font-bold transition">
-              Unblock User
-            </a>
-          {% else %}
-            <a href="{{ url_for('block_user', user_id=u.id) }}" class="inline-block px-5 py-3 rounded-2xl bg-red-500 hover:bg-red-600 font-bold transition">
-              Block User
-            </a>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
-    {% else %}
-      <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No users found.</div>
-    {% endif %}
-  </section>
+          <h3 class="text-2xl font-bold">{{ store.business_name }}</h3>
 
-  {% macro admin_order_card(order, badge_text, badge_class) %}
-    <div class="bg-white/10 border border-white/10 rounded-[28px] p-5">
-      <div class="flex flex-col lg:flex-row gap-5">
-        <div class="w-full lg:w-40 shrink-0">
-          {% if order.product_image %}
-            <img src="{{ order.product_image }}" alt="Product" class="w-full h-40 object-cover rounded-2xl border border-white/10">
-          {% else %}
-            <div class="w-full h-40 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
-              No Image
-            </div>
+          <div class="grid sm:grid-cols-2 gap-3 mt-4 text-sm text-slate-300">
+            <p><strong>Owner:</strong> {{ store.owner_name }}</p>
+            <p><strong>Email:</strong> {{ store.business_email }}</p>
+            <p><strong>Phone:</strong> {{ store.contact_number }}</p>
+            <p><strong>Amount:</strong> {{ store.payment_amount }}</p>
+          </div>
+
+          <a href="{{ store.business_url }}" target="_blank"
+             class="block mt-3 text-cyan-300 break-all">
+            {{ store.business_url }}
+          </a>
+
+          {% if store.payment_screenshot %}
+          <a href="{{ store.payment_screenshot }}" target="_blank"
+             class="inline-block mt-3 text-emerald-300 font-semibold">
+            View Payment Proof
+          </a>
           {% endif %}
         </div>
 
-        <div class="flex-1">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <h3 class="text-xl font-bold">{{ order.product_name or 'Untitled Product' }}</h3>
-            <span class="px-4 py-2 rounded-full text-sm font-bold {{ badge_class }}">{{ badge_text }}</span>
-          </div>
+        <div class="flex flex-col gap-3">
+          <a href="{{ url_for('approve_store', store_id=store.id) }}"
+             class="px-6 py-3 bg-emerald-500 hover:bg-emerald-600 rounded-2xl font-bold text-center">
+            Approve
+          </a>
 
-          <div class="grid sm:grid-cols-2 gap-3 mt-4 text-slate-300">
-            <p><strong>Business:</strong> {{ order.store_ref.business_name }}</p>
-            <p><strong>Phone:</strong> {{ order.phone or 'N/A' }}</p>
-            <p><strong>Customer:</strong> {{ order.customer_name or 'N/A' }}</p>
-            <p><strong>Email:</strong> {{ order.customer_email or 'N/A' }}</p>
-            <p><strong>Price:</strong> {{ order.product_price or 'N/A' }}</p>
-            <p><strong>City:</strong> {{ order.customer_city or 'N/A' }}</p>
-          </div>
+          <a href="{{ url_for('reject_store', store_id=store.id) }}"
+             class="px-6 py-3 bg-red-500 hover:bg-red-600 rounded-2xl font-bold text-center">
+            Reject
+          </a>
+        </div>
 
-          <div class="mt-5 flex flex-wrap gap-3">
-            <a href="{{ url_for('view_order', order_id=order.id) }}" class="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 font-semibold transition">
-              View
-            </a>
-            {% if order.status == 'pending_verification' %}
-              <a href="{{ url_for('approve_order', order_id=order.id) }}" class="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-semibold transition">
-                Approve
-              </a>
-              <a href="{{ url_for('reject_order', order_id=order.id) }}" class="px-5 py-2 rounded-xl bg-red-500 hover:bg-red-600 font-semibold transition">
-                Reject
-              </a>
+      </div>
+    </div>
+    {% else %}
+      <div class="bg-white/10 p-5 rounded-2xl text-slate-300">No pending requests.</div>
+    {% endfor %}
+  </section>
+
+  <!-- ===============================
+       USERS (UPGRADED)
+  =============================== -->
+  <section class="space-y-5">
+    <h2 class="text-3xl font-black">Users</h2>
+
+    {% for u in users %}
+    <div class="bg-white/10 p-5 rounded-3xl border border-white/10 flex justify-between items-center">
+
+      <div>
+        <h3 class="text-xl font-bold">{{ u.full_name }}</h3>
+        <p class="text-slate-400">{{ u.email }}</p>
+
+        <span class="text-sm font-semibold
+          {% if u.is_blocked %}text-red-300{% else %}text-emerald-300{% endif %}">
+          {{ "Blocked" if u.is_blocked else "Active" }}
+        </span>
+      </div>
+
+      <div>
+        {% if u.is_blocked %}
+        <a href="{{ url_for('unblock_user', user_id=u.id) }}"
+           class="px-5 py-2 bg-emerald-500 rounded-xl font-bold">
+          Unblock
+        </a>
+        {% else %}
+        <a href="{{ url_for('block_user', user_id=u.id) }}"
+           class="px-5 py-2 bg-red-500 rounded-xl font-bold">
+          Block
+        </a>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endfor %}
+  </section>
+
+  <!-- ===============================
+       ORDERS (ULTRA)
+  =============================== -->
+  {% macro order_card(order, badge, color) %}
+  <div class="bg-white/10 p-6 rounded-3xl border border-white/10 shadow-xl">
+    <div class="flex flex-col lg:flex-row gap-5">
+
+      <div class="w-full lg:w-40">
+        {% if order.product_image %}
+        <img src="{{ order.product_image }}" class="w-full h-40 object-cover rounded-2xl">
+        {% else %}
+        <div class="h-40 bg-white/5 flex items-center justify-center text-slate-400">No Image</div>
+        {% endif %}
+      </div>
+
+      <div class="flex-1">
+
+        <div class="flex justify-between flex-wrap gap-2">
+          <h3 class="text-xl font-bold">{{ order.product_name }}</h3>
+
+          <div class="flex gap-2">
+            <span class="px-3 py-1 rounded-full text-sm font-bold {{ color }}">
+              {{ badge }}
+            </span>
+
+            {% if order.is_duplicate %}
+            <span class="px-3 py-1 rounded-full text-sm bg-red-500/20 text-red-300 font-bold">
+              ⚠ Duplicate
+            </span>
             {% endif %}
           </div>
         </div>
+
+        <div class="grid sm:grid-cols-2 gap-3 mt-4 text-sm text-slate-300">
+          <p><strong>Customer:</strong> {{ order.customer_name }}</p>
+          <p><strong>Phone:</strong> {{ order.phone }}</p>
+          <p><strong>Price:</strong> {{ order.total_price or order.product_price }}</p>
+          <p><strong>City:</strong> {{ order.customer_city }}</p>
+        </div>
+
+        <div class="mt-4 flex gap-3 flex-wrap">
+          <a href="{{ url_for('view_order', order_id=order.id) }}"
+             class="px-4 py-2 bg-cyan-500 rounded-xl font-semibold">
+            View
+          </a>
+
+          {% if order.status == 'pending_verification' %}
+          <a href="{{ url_for('approve_order', order_id=order.id) }}"
+             class="px-4 py-2 bg-emerald-500 rounded-xl font-semibold">
+            Approve
+          </a>
+
+          <a href="{{ url_for('reject_order', order_id=order.id) }}"
+             class="px-4 py-2 bg-red-500 rounded-xl font-semibold">
+            Reject
+          </a>
+          {% endif %}
+        </div>
+
       </div>
     </div>
+  </div>
   {% endmacro %}
 
+  <!-- PENDING -->
   <section class="space-y-4">
     <h2 class="text-2xl font-black">Pending Orders</h2>
-    {% if pending_orders %}
-      {% for order in pending_orders %}
-        {{ admin_order_card(order, 'Pending', 'bg-amber-500/20 text-amber-300') }}
-      {% endfor %}
+    {% for o in pending_orders %}
+      {{ order_card(o, "Pending", "bg-amber-500/20 text-amber-300") }}
     {% else %}
-      <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No pending orders.</div>
-    {% endif %}
+      <div class="text-slate-300">No pending orders</div>
+    {% endfor %}
   </section>
 
+  <!-- APPROVED -->
   <section class="space-y-4">
     <h2 class="text-2xl font-black">Approved Orders</h2>
-    {% if approved_orders %}
-      {% for order in approved_orders %}
-        {{ admin_order_card(order, 'Approved', 'bg-emerald-500/20 text-emerald-300') }}
-      {% endfor %}
+    {% for o in approved_orders %}
+      {{ order_card(o, "Approved", "bg-emerald-500/20 text-emerald-300") }}
     {% else %}
-      <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No approved orders.</div>
-    {% endif %}
+      <div class="text-slate-300">No approved orders</div>
+    {% endfor %}
   </section>
 
+  <!-- REJECTED -->
   <section class="space-y-4">
     <h2 class="text-2xl font-black">Rejected Orders</h2>
-    {% if rejected_orders %}
-      {% for order in rejected_orders %}
-        {{ admin_order_card(order, 'Rejected', 'bg-red-500/20 text-red-300') }}
-      {% endfor %}
+    {% for o in rejected_orders %}
+      {{ order_card(o, "Rejected", "bg-red-500/20 text-red-300") }}
     {% else %}
-      <div class="bg-white/10 border border-white/10 rounded-2xl p-5 text-slate-300">No rejected orders.</div>
-    {% endif %}
+      <div class="text-slate-300">No rejected orders</div>
+    {% endfor %}
   </section>
 
 </div>

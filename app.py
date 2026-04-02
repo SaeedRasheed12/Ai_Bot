@@ -85,24 +85,73 @@ class BotOrder(db.Model):
 
     store_id = db.Column(db.Integer, db.ForeignKey("store.id"), nullable=False)
 
+    # ===============================
+    # 📞 CORE INFO
+    # ===============================
     phone = db.Column(db.String(50), nullable=False)
     page = db.Column(db.String(1000))
+    canonical_url = db.Column(db.String(1000))
     customer_ip = db.Column(db.String(120))
 
+    # ===============================
+    # 📦 RAW DATA (FULL SNAPSHOT)
+    # ===============================
     form_data = db.Column(db.Text)
 
+    # ===============================
+    # 👤 CUSTOMER DETAILS
+    # ===============================
     customer_name = db.Column(db.String(255))
     customer_email = db.Column(db.String(255))
     customer_address = db.Column(db.Text)
     customer_city = db.Column(db.String(255))
     customer_postal_code = db.Column(db.String(100))
 
+    # ===============================
+    # 🛒 PRODUCT DETAILS
+    # ===============================
     product_name = db.Column(db.String(255))
     product_price = db.Column(db.String(100))
     product_image = db.Column(db.String(1000))
 
+    product_url = db.Column(db.String(1000))
+    product_quantity = db.Column(db.String(50))
+
+    # ===============================
+    # 💰 PRICING BREAKDOWN
+    # ===============================
+    subtotal_price = db.Column(db.String(100))
+    delivery_fee = db.Column(db.String(100))
+    discount_amount = db.Column(db.String(100))
+    total_price = db.Column(db.String(100))
+    currency = db.Column(db.String(50))
+
+    # ===============================
+    # 💳 CHECKOUT META
+    # ===============================
+    payment_method = db.Column(db.String(100))
+    shipping_method = db.Column(db.String(100))
+    coupon_code = db.Column(db.String(100))
+    payment_status_hint = db.Column(db.String(50))
+
+    # ===============================
+    # 📄 PAGE META
+    # ===============================
     page_title = db.Column(db.String(500))
     submitted_at_text = db.Column(db.String(100))
+
+    # ===============================
+    # 🧠 SNAPSHOTS (POWERFUL)
+    # ===============================
+    summary_text = db.Column(db.Text)
+    page_text_snapshot = db.Column(db.Text)
+    page_html_snapshot = db.Column(db.Text)
+
+    # ===============================
+    # ⚙️ SYSTEM META
+    # ===============================
+    bot_version = db.Column(db.String(50))
+    is_duplicate = db.Column(db.Boolean, default=False)
 
     status = db.Column(db.String(50), default="pending_verification", index=True)
 
@@ -110,12 +159,18 @@ class BotOrder(db.Model):
     approved_at = db.Column(db.DateTime)
     rejected_at = db.Column(db.DateTime)
 
+    # ===============================
+    # 📦 RAW JSON PARSER
+    # ===============================
     def get_form_data(self):
         try:
             return json.loads(self.form_data) if self.form_data else {}
         except Exception:
             return {}
 
+    # ===============================
+    # 🧾 CLEAN DISPLAY FIELDS
+    # ===============================
     def summary_fields(self):
         data = self.get_form_data()
         cleaned = []
@@ -137,6 +192,18 @@ class BotOrder(db.Model):
             })
 
         return cleaned
+
+    # ===============================
+    # ⚡ QUICK SUMMARY (UI READY)
+    # ===============================
+    def short_summary(self):
+        return {
+            "product": self.product_name or "Unknown",
+            "price": self.total_price or self.product_price,
+            "customer": self.customer_name or self.phone,
+            "status": self.status,
+            "city": self.customer_city,
+        }
 
 
 # =========================================================
@@ -707,9 +774,20 @@ def new_order():
         if not request_domain or not store_domain:
             return jsonify(success=False, message="Invalid domain"), 400
 
-        # allow subdomains also
         if not request_domain.endswith(store_domain):
             return jsonify(success=False, message="Unauthorized domain"), 403
+
+        # ===============================
+        # 🔁 DUPLICATE PROTECTION
+        # ===============================
+        recent = BotOrder.query.filter_by(
+            store_id=store.id,
+            phone=phone
+        ).order_by(BotOrder.created_at.desc()).first()
+
+        is_duplicate = False
+        if recent and (datetime.utcnow() - recent.created_at).seconds < 30:
+            is_duplicate = True
 
         # ===============================
         # EXTRACT DATA
@@ -724,6 +802,35 @@ def new_order():
             customer_ip = customer_ip.split(",")[0].strip()
 
         # ===============================
+        # 🧠 EXTRA FIELDS (FROM BOT V2)
+        # ===============================
+        product_url = form_data.get("_product_url", "")
+        product_quantity = form_data.get("_product_quantity", "")
+        delivery_fee = form_data.get("_delivery_fee", "")
+        total_price = form_data.get("_total_price", "")
+        subtotal_price = form_data.get("_product_subtotal", "")
+        discount_amount = form_data.get("_discount_amount", "")
+        currency = form_data.get("_currency", "")
+
+        payment_method = form_data.get("_payment_method", "")
+        shipping_method = form_data.get("_shipping_method", "")
+        coupon_code = form_data.get("_coupon_code", "")
+        payment_status_hint = form_data.get("_payment_status_hint", "")
+
+        summary_text = form_data.get("_summary_text", "")
+        page_text_snapshot = form_data.get("_page_text_snapshot", "")
+        page_html_snapshot = form_data.get("_page_html_snapshot", "")
+
+        canonical_url = form_data.get("_canonical_url", "")
+        bot_version = form_data.get("_bot_version", "v1")
+
+        # ===============================
+        # 🪵 DEBUG LOG (IMPORTANT)
+        # ===============================
+        print("📦 NEW ORDER CAPTURED:")
+        print(json.dumps(form_data, indent=2, ensure_ascii=False)[:2000])
+
+        # ===============================
         # CREATE ORDER
         # ===============================
         order = BotOrder(
@@ -731,22 +838,49 @@ def new_order():
             store_id=store.id,
             phone=phone,
             page=page,
+            canonical_url=canonical_url,
             customer_ip=customer_ip,
             form_data=json.dumps(form_data, ensure_ascii=False),
 
+            # 👤 customer
             customer_name=extracted["customer_name"],
             customer_email=extracted["customer_email"],
             customer_address=extracted["customer_address"],
             customer_city=extracted["customer_city"],
             customer_postal_code=extracted["customer_postal_code"],
 
+            # 🛒 product
             product_name=extracted["product_name"],
             product_price=extracted["product_price"],
             product_image=extracted["product_image"],
+            product_url=product_url,
+            product_quantity=product_quantity,
 
+            # 💰 pricing
+            subtotal_price=subtotal_price,
+            delivery_fee=delivery_fee,
+            discount_amount=discount_amount,
+            total_price=total_price,
+            currency=currency,
+
+            # 💳 checkout
+            payment_method=payment_method,
+            shipping_method=shipping_method,
+            coupon_code=coupon_code,
+            payment_status_hint=payment_status_hint,
+
+            # 📄 meta
             page_title=extracted["page_title"],
             submitted_at_text=extracted["submitted_at_text"],
 
+            # 🧠 snapshots
+            summary_text=summary_text,
+            page_text_snapshot=page_text_snapshot,
+            page_html_snapshot=page_html_snapshot,
+
+            # ⚙️ system
+            bot_version=bot_version,
+            is_duplicate=is_duplicate,
             status="pending_verification"
         )
 
@@ -756,7 +890,8 @@ def new_order():
         return jsonify(
             success=True,
             order_id=order.id,
-            status=order.status
+            status=order.status,
+            duplicate=is_duplicate
         )
 
     except Exception as e:
