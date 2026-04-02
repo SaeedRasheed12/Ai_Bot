@@ -1091,6 +1091,24 @@ def api_approve_order(order_id):
 
     return jsonify({"message": "Order approved"})
 
+@app.route('/api/order/<int:order_id>/delete', methods=['DELETE'])
+def api_delete_order(order_id):
+    if not login_required():
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    user = current_user()
+    order = db.session.get(BotOrder, order_id)
+
+    if not order:
+        return jsonify({'error': 'Order not found'}), 404
+
+    if not user.is_admin and order.store_ref.user_id != user.id:
+        return jsonify({'error': 'Forbidden'}), 403
+
+    db.session.delete(order)
+    db.session.commit()
+    return jsonify({'message': 'Order deleted successfully'})
+
 @app.route("/api/order/<int:order_id>/reject")
 def api_reject_order(order_id):
     if not login_required():
