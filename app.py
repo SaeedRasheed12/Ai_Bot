@@ -1099,7 +1099,11 @@ def api_order_detail(order_id):
         "page": order.page,
         "summary_text": order.summary_text,
         "page_text_snapshot": order.page_text_snapshot,
-        "bot_version": order.bot_version
+        "bot_version": order.bot_version,
+        
+         # 🔥 MOST IMPORTANT (HTML MATCH)
+        "captured_fields": order.summary_fields
+        
     })
                   
 # =========================================================
