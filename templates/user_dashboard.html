@@ -351,15 +351,20 @@
         <div class="flex flex-col xl:flex-row gap-5">
 
           <div class="w-full xl:w-44 shrink-0">
-            {% if order.product_image %}
-              <img src="{{ order.product_image }}"
-                   alt="Product"
-                   class="w-full h-44 object-cover rounded-2xl border border-white/10 shadow-lg">
-            {% else %}
-              <div class="w-full h-44 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
-                No Image
-              </div>
-            {% endif %}
+{% if order.product_image and ('http' in order.product_image or 'data:image' in order.product_image) %}
+  <img src="{{ order.product_image }}"
+       alt="Product"
+       class="w-full h-44 object-cover rounded-2xl border border-white/10 shadow-lg"
+       onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+  <div class="hidden w-full h-44 rounded-2xl bg-white/5 border border-white/10 items-center justify-center text-slate-400">
+    Image Failed
+  </div>
+{% else %}
+  <div class="w-full h-44 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+    No Image
+  </div>
+{% endif %}
           </div>
 
           <div class="flex-1 min-w-0">
