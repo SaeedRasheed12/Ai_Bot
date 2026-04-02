@@ -25,7 +25,7 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
 
 db = SQLAlchemy(app)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 
 # =========================================================
@@ -915,6 +915,197 @@ def order_status(order_id):
     )
 
 
+
+# ================= API Flutter AUTH =================
+
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    data = request.get_json()
+
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "").strip()
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not user.check_password(password):
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    if user.is_blocked:
+        return jsonify({"error": "Account blocked"}), 403
+
+    session["user_id"] = user.id
+
+    return jsonify({
+        "message": "Login success",
+        "user": {
+            "id": user.id,
+            "name": user.full_name,
+            "email": user.email
+        }
+    })
+
+@app.route("/api/signup", methods=["POST"])
+def api_signup():
+    data = request.get_json()
+
+    full_name = data.get("full_name", "").strip()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password", "").strip()
+
+    if not full_name or not email or not password:
+        return jsonify({"error": "Missing fields"}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Email exists"}), 400
+
+    user = User(full_name=full_name, email=email)
+    user.set_password(password)
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({"message": "Signup success"})
+    
+@app.route("/api/logout")
+def api_logout():
+    session.clear()
+    return jsonify({"message": "Logged out"})
+
+@app.route("/api/dashboard")
+def api_dashboard():
+    if not login_required():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = current_user()
+    store = Store.query.filter_by(user_id=user.id).first()
+
+    if not store:
+        return jsonify({
+            "user": user.full_name,
+            "store": None
+        })
+
+    pending = BotOrder.query.filter_by(store_id=store.id, status="pending_verification").count()
+    approved = BotOrder.query.filter_by(store_id=store.id, status="approved").count()
+    rejected = BotOrder.query.filter_by(store_id=store.id, status="rejected").count()
+
+    return jsonify({
+        "user": user.full_name,
+        "store": {
+            "name": store.business_name,
+            "status": store.status,
+            "script_enabled": store.script_enabled
+        },
+        "stats": {
+            "pending": pending,
+            "approved": approved,
+            "rejected": rejected,
+            "total": pending + approved + rejected
+        }
+    })
+    
+@app.route("/api/orders")
+def api_orders():
+    if not login_required():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    user = current_user()
+    store = Store.query.filter_by(user_id=user.id).first()
+
+    if not store:
+        return jsonify([])
+
+    orders = BotOrder.query.filter_by(store_id=store.id)\
+        .order_by(BotOrder.created_at.desc()).all()
+
+    return jsonify([{
+        "id": o.id,
+        "product_name": o.product_name,
+        "customer_name": o.customer_name,
+        "phone": o.phone,
+        "total_price": o.total_price or o.product_price,
+        "status": o.status,
+        "created_at": o.created_at.strftime("%Y-%m-%d %H:%M")
+    } for o in orders])
+    
+@app.route("/api/order/<int:order_id>")
+def api_order_detail(order_id):
+    if not login_required():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    order = db.session.get(BotOrder, order_id)
+
+    if not order:
+        return jsonify({"error": "Order not found"}), 404
+
+    return jsonify({
+        "id": order.id,
+        "status": order.status,
+
+        # PRODUCT
+        "product_name": order.product_name,
+        "product_price": order.product_price,
+        "product_image": order.product_image,
+        "product_url": order.product_url,
+        "product_quantity": order.product_quantity,
+
+        # PRICING
+        "delivery_fee": order.delivery_fee,
+        "discount_amount": order.discount_amount,
+        "total_price": order.total_price,
+        "currency": order.currency,
+
+        # CUSTOMER
+        "customer_name": order.customer_name,
+        "customer_email": order.customer_email,
+        "phone": order.phone,
+        "customer_city": order.customer_city,
+        "customer_address": order.customer_address,
+
+        # META
+        "payment_method": order.payment_method,
+        "shipping_method": order.shipping_method,
+        "coupon_code": order.coupon_code,
+        "payment_status_hint": order.payment_status_hint,
+
+        # EXTRA
+        "page": order.page,
+        "summary_text": order.summary_text,
+        "page_text_snapshot": order.page_text_snapshot,
+        "bot_version": order.bot_version
+    })
+
+@app.route("/api/order/<int:order_id>/approve")
+def api_approve_order(order_id):
+    if not login_required():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    order = db.session.get(BotOrder, order_id)
+    if not order:
+        return jsonify({"error": "Not found"}), 404
+
+    order.status = "approved"
+    order.approved_at = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify({"message": "Order approved"})
+
+@app.route("/api/order/<int:order_id>/reject")
+def api_reject_order(order_id):
+    if not login_required():
+        return jsonify({"error": "Unauthorized"}), 401
+
+    order = db.session.get(BotOrder, order_id)
+    if not order:
+        return jsonify({"error": "Not found"}), 404
+
+    order.status = "rejected"
+    order.rejected_at = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify({"message": "Order rejected"})               
 # =========================================================
 # DB INIT
 # =========================================================
