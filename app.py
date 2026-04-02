@@ -1020,41 +1020,42 @@ def api_orders():
 
     return jsonify([{
         "id": o.id,
-        "status": o.status,
-        "created_at": o.created_at.strftime("%Y-%m-%d %H:%M"),
+        "status": o.status or "",
+        "created_at": o.created_at.strftime("%Y-%m-%d %H:%M") if o.created_at else "",
 
         # PRODUCT
-        "product_name": o.product_name,
-        "product_price": o.product_price,
-        "product_image": o.product_image,
-        "product_url": o.product_url,
-        "product_quantity": o.product_quantity,
+        "product_name": o.product_name or "",
+        "product_price": o.product_price or "",
+        "product_image": o.product_image or "",
+        "product_url": o.product_url or "",
+        "product_quantity": o.product_quantity or "",
 
         # PRICING
-        "delivery_fee": o.delivery_fee,
-        "discount_amount": o.discount_amount,
-        "total_price": o.total_price or o.product_price,
-        "currency": o.currency,
+        "delivery_fee": o.delivery_fee or "",
+        "discount_amount": o.discount_amount or "",
+        "total_price": o.total_price or o.product_price or "",
+        "currency": o.currency or "",
 
         # CUSTOMER
-        "customer_name": o.customer_name,
-        "customer_email": o.customer_email,
-        "phone": o.phone,
-        "customer_city": o.customer_city,
-        "customer_address": o.customer_address,
+        "customer_name": o.customer_name or "",
+        "customer_email": o.customer_email or "",
+        "phone": o.phone or "",
+        "customer_city": o.customer_city or "",
+        "customer_address": o.customer_address or "",
 
         # META
-        "payment_method": o.payment_method,
-        "shipping_method": o.shipping_method,
-        "coupon_code": o.coupon_code,
-        "payment_status_hint": o.payment_status_hint,
+        "payment_method": o.payment_method or "",
+        "shipping_method": o.shipping_method or "",
+        "coupon_code": o.coupon_code or "",
+        "payment_status_hint": o.payment_status_hint or "",
 
         # EXTRA
-        "page": o.page,
-        "summary_text": o.summary_text,
-        "bot_version": o.bot_version
+        "page": o.page or "",
+        "summary_text": o.summary_text or "",
+        "bot_version": o.bot_version or ""
     } for o in orders])
-    
+
+
 @app.route("/api/order/<int:order_id>")
 def api_order_detail(order_id):
     if not login_required():
@@ -1067,43 +1068,42 @@ def api_order_detail(order_id):
 
     return jsonify({
         "id": order.id,
-        "status": order.status,
+        "status": order.status or "",
 
         # PRODUCT
-        "product_name": order.product_name,
-        "product_price": order.product_price,
-        "product_image": order.product_image,
-        "product_url": order.product_url,
-        "product_quantity": order.product_quantity,
+        "product_name": order.product_name or "",
+        "product_price": order.product_price or "",
+        "product_image": order.product_image or "",
+        "product_url": order.product_url or "",
+        "product_quantity": order.product_quantity or "",
 
         # PRICING
-        "delivery_fee": order.delivery_fee,
-        "discount_amount": order.discount_amount,
-        "total_price": order.total_price,
-        "currency": order.currency,
+        "delivery_fee": order.delivery_fee or "",
+        "discount_amount": order.discount_amount or "",
+        "total_price": order.total_price or "",
+        "currency": order.currency or "",
 
         # CUSTOMER
-        "customer_name": order.customer_name,
-        "customer_email": order.customer_email,
-        "phone": order.phone,
-        "customer_city": order.customer_city,
-        "customer_address": order.customer_address,
+        "customer_name": order.customer_name or "",
+        "customer_email": order.customer_email or "",
+        "phone": order.phone or "",
+        "customer_city": order.customer_city or "",
+        "customer_address": order.customer_address or "",
 
         # META
-        "payment_method": order.payment_method,
-        "shipping_method": order.shipping_method,
-        "coupon_code": order.coupon_code,
-        "payment_status_hint": order.payment_status_hint,
+        "payment_method": order.payment_method or "",
+        "shipping_method": order.shipping_method or "",
+        "coupon_code": order.coupon_code or "",
+        "payment_status_hint": order.payment_status_hint or "",
 
         # EXTRA
-        "page": order.page,
-        "summary_text": order.summary_text,
-        "page_text_snapshot": order.page_text_snapshot,
-        "bot_version": order.bot_version,
-        
-         # 🔥 MOST IMPORTANT (HTML MATCH)
-        "captured_fields": order.summary_fields
-        
+        "page": order.page or "",
+        "summary_text": order.summary_text or "",
+        "page_text_snapshot": order.page_text_snapshot or "",
+        "bot_version": order.bot_version or "",
+
+        # 🔥 FINAL FIX (IMPORTANT)
+        "captured_fields": order.summary_fields()
     })
                   
 # =========================================================
