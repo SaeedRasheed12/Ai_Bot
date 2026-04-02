@@ -1020,12 +1020,39 @@ def api_orders():
 
     return jsonify([{
         "id": o.id,
-        "product_name": o.product_name,
-        "customer_name": o.customer_name,
-        "phone": o.phone,
-        "total_price": o.total_price or o.product_price,
         "status": o.status,
-        "created_at": o.created_at.strftime("%Y-%m-%d %H:%M")
+        "created_at": o.created_at.strftime("%Y-%m-%d %H:%M"),
+
+        # PRODUCT
+        "product_name": o.product_name,
+        "product_price": o.product_price,
+        "product_image": o.product_image,
+        "product_url": o.product_url,
+        "product_quantity": o.product_quantity,
+
+        # PRICING
+        "delivery_fee": o.delivery_fee,
+        "discount_amount": o.discount_amount,
+        "total_price": o.total_price or o.product_price,
+        "currency": o.currency,
+
+        # CUSTOMER
+        "customer_name": o.customer_name,
+        "customer_email": o.customer_email,
+        "phone": o.phone,
+        "customer_city": o.customer_city,
+        "customer_address": o.customer_address,
+
+        # META
+        "payment_method": o.payment_method,
+        "shipping_method": o.shipping_method,
+        "coupon_code": o.coupon_code,
+        "payment_status_hint": o.payment_status_hint,
+
+        # EXTRA
+        "page": o.page,
+        "summary_text": o.summary_text,
+        "bot_version": o.bot_version
     } for o in orders])
     
 @app.route("/api/order/<int:order_id>")
@@ -1074,56 +1101,7 @@ def api_order_detail(order_id):
         "page_text_snapshot": order.page_text_snapshot,
         "bot_version": order.bot_version
     })
-
-@app.route("/api/order/<int:order_id>/approve")
-def api_approve_order(order_id):
-    if not login_required():
-        return jsonify({"error": "Unauthorized"}), 401
-
-    order = db.session.get(BotOrder, order_id)
-    if not order:
-        return jsonify({"error": "Not found"}), 404
-
-    order.status = "approved"
-    order.approved_at = datetime.utcnow()
-
-    db.session.commit()
-
-    return jsonify({"message": "Order approved"})
-
-@app.route('/api/order/<int:order_id>/delete', methods=['DELETE'])
-def api_delete_order(order_id):
-    if not login_required():
-        return jsonify({'error': 'Unauthorized'}), 401
-
-    user = current_user()
-    order = db.session.get(BotOrder, order_id)
-
-    if not order:
-        return jsonify({'error': 'Order not found'}), 404
-
-    if not user.is_admin and order.store_ref.user_id != user.id:
-        return jsonify({'error': 'Forbidden'}), 403
-
-    db.session.delete(order)
-    db.session.commit()
-    return jsonify({'message': 'Order deleted successfully'})
-
-@app.route("/api/order/<int:order_id>/reject")
-def api_reject_order(order_id):
-    if not login_required():
-        return jsonify({"error": "Unauthorized"}), 401
-
-    order = db.session.get(BotOrder, order_id)
-    if not order:
-        return jsonify({"error": "Not found"}), 404
-
-    order.status = "rejected"
-    order.rejected_at = datetime.utcnow()
-
-    db.session.commit()
-
-    return jsonify({"message": "Order rejected"})               
+                  
 # =========================================================
 # DB INIT
 # =========================================================
