@@ -141,6 +141,13 @@ class BotOrder(db.Model):
     submitted_at_text = db.Column(db.String(100))
 
     # ===============================
+    # 🧠 SNAPSHOTS (POWERFUL)
+    # ===============================
+    summary_text = db.Column(db.Text)
+    page_text_snapshot = db.Column(db.Text)
+    page_html_snapshot = db.Column(db.Text)
+
+    # ===============================
     # ⚙️ SYSTEM META
     # ===============================
     bot_version = db.Column(db.String(50))
@@ -197,7 +204,6 @@ class BotOrder(db.Model):
             "status": self.status,
             "city": self.customer_city,
         }
-
 
 # =========================================================
 # HELPERS
